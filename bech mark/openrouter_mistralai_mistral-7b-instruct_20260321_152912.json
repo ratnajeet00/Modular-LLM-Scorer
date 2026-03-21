@@ -1,0 +1,23 @@
+{
+  "model": "openrouter:mistralai/mistral-7b-instruct",
+  "mode": "half",
+  "per_dataset": {
+    "gsm8k_main": 0.0,
+    "gsm8k_socratic": 0.0,
+    "mbpp_full": 0.0,
+    "mbpp_sanitized": 0.0,
+    "natural_questions": 0.0,
+    "proofwriter": 0.0,
+    "reclor": 0.0,
+    "squad": 0.0
+  },
+  "per_domain": {
+    "code": 0.0,
+    "knowledge": 0.0,
+    "logic": 0.0,
+    "math": 0.0
+  },
+  "final_score": 0.0,
+  "total_questions": 1500,
+  "cost": 0.0
+}

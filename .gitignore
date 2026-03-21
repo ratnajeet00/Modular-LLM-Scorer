@@ -1,0 +1,18 @@
+# datasets
+data/
+datasets/
+
+# cache / outputs
+benchmarks/
+.cache/
+dist/
+
+# env
+.venv/
+
+# large files
+*.bin
+*.pt
+*.ckpt
+*.model
+*.jsonl
