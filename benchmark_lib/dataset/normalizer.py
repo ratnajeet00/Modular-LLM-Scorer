@@ -207,7 +207,11 @@ class DatasetNormalizer:
 		if dataset_name == "trivia_qa":
 			q = str(row.get("question", ""))
 			a = self._coerce_trivia_answer(row.get("answer"))
-			return q, a, None, {}
+			meta: dict[str, Any] = {}
+			ans_obj = row.get("answer")
+			if isinstance(ans_obj, dict) and isinstance(ans_obj.get("aliases"), list):
+				meta["aliases"] = [str(x) for x in ans_obj.get("aliases", []) if str(x).strip()]
+			return q, a, None, meta
 
 		# Generic fallback.
 		question = str(
@@ -227,7 +231,12 @@ class DatasetNormalizer:
 		options: list[str] | None = None
 		if isinstance(row.get("options"), list):
 			options = [str(x) for x in row["options"]]
-		return question, answer, options, {}
+
+		meta: dict[str, Any] = {}
+		for key in ["test", "tests", "test_list", "input", "output", "expected_output", "entry_point", "aliases"]:
+			if key in row and row.get(key) is not None:
+				meta[key] = row.get(key)
+		return question, answer, options, meta
 
 	def _normalize_squad(self, ds_dir: Path, domain: str) -> list[NormalizedSample]:
 		out: list[NormalizedSample] = []
@@ -244,11 +253,13 @@ class DatasetNormalizer:
 						answers = qa.get("answers", [])
 						if not answers:
 							continue
-						answer = str(answers[0].get("text", ""))
+						all_answers = [str(x.get("text", "")) for x in answers if str(x.get("text", "")).strip()]
+						answer = all_answers[0] if all_answers else ""
 						question = str(qa.get("question", ""))
 						if not question or not answer:
 							continue
 						difficulty = knowledge_difficulty(question, context)
+						aliases = list(dict.fromkeys(all_answers))
 						out.append(
 							NormalizedSample(
 								id=str(qa.get("id", f"squad-{idx}")),
@@ -258,7 +269,7 @@ class DatasetNormalizer:
 								answer=answer,
 								options=None,
 								difficulty=difficulty,
-								metadata={"context": context},
+								metadata={"context": context, "aliases": aliases},
 							)
 						)
 						idx += 1
