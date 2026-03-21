@@ -17,12 +17,16 @@ class OpenAIModel(BaseModel):
         self.model_name = f"openai:{model}"
         self._last_cost = 0.0
 
-    def generate(self, prompt: str) -> str:
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0,
-        )
+    def generate(self, prompt: str, max_tokens: int | None = None) -> str:
+        kwargs = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0,
+        }
+        if max_tokens:
+            kwargs["max_tokens"] = max_tokens
+        
+        response = self.client.chat.completions.create(**kwargs)
         self._last_cost = 0.0
         return response.choices[0].message.content.strip()
 

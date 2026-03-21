@@ -29,6 +29,12 @@ Example setup file is provided at `.env.example`.
 
 - `OPENROUTER_API_KEY`
 
+### Hugging Face
+
+- `HF_API_TOKEN` - API token from https://huggingface.co/settings/tokens (required for Inference API)
+- `HF_USE_INFERENCE_API` - Set to `true` to use cloud Inference API, `false` for local inference (default: `false`)
+- `HF_DEVICE` - Device for local inference: `cpu`, `cuda`, or `mps` (default: `cpu`)
+
 ### Local provider
 
 - `LOCAL_BASE_URL` (default: `http://localhost:11434/v1`)

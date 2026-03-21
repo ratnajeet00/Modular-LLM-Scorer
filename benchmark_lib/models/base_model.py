@@ -7,7 +7,7 @@ class BaseModel(ABC):
     model_name: str = "custom-model"
 
     @abstractmethod
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, max_tokens: int | None = None) -> str:
         raise NotImplementedError
 
     def get_last_cost(self) -> float:

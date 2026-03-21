@@ -50,6 +50,12 @@ def score(records: list[EvalRecord], model_name: str, mode: str) -> dict:
 
     per_dataset = {k: round(_acc(v), 6) for k, v in sorted(by_dataset.items())}
     per_domain = {k: round(_acc(v), 6) for k, v in sorted(by_domain.items())}
+    total_questions = len(records)
+    correct_count = sum(1 for r in records if r.correct)
+    wrong_count = total_questions - correct_count
+    accuracy = (correct_count / total_questions) if total_questions else 0.0
+    error_rate = (wrong_count / total_questions) if total_questions else 0.0
+    failure_rate = (call_error_count / total_questions) if total_questions else 0.0
 
     final_score = 0.0
     for domain, weight in DOMAIN_WEIGHTS.items():
@@ -58,11 +64,16 @@ def score(records: list[EvalRecord], model_name: str, mode: str) -> dict:
     return {
         "model": model_name,
         "mode": mode,
+        "accuracy": round(accuracy, 6),
         "per_dataset": per_dataset,
         "per_domain": per_domain,
         "final_score": round(final_score, 6),
-        "total_questions": len(records),
-        "non_empty_predictions": len(records) - empty_prediction_count,
+        "total_questions": total_questions,
+        "correct_count": correct_count,
+        "wrong_count": wrong_count,
+        "error_rate": round(error_rate, 6),
+        "failure_rate": round(failure_rate, 6),
+        "non_empty_predictions": total_questions - empty_prediction_count,
         "empty_predictions": empty_prediction_count,
         "call_error_count": call_error_count,
         "call_error_examples": call_error_examples,

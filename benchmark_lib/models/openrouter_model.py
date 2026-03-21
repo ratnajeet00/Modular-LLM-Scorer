@@ -96,29 +96,65 @@ class OpenRouterModel(BaseModel):
             )
             raise ValueError(self._model_check_error)
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, max_tokens: int | None = None) -> str:
         self._maybe_fix_model_name()
-        response = requests.post(
-            f"{self.base_url}/chat/completions",
-            headers=self._headers(),
-            json={
-                "model": self.model,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0,
-            },
-            timeout=60,
-        )
-        if not response.ok:
-            detail = self._extract_error_message(response)
-            if detail:
-                raise RuntimeError(
-                    f"OpenRouter request failed ({response.status_code}): {detail}"
+        
+        # Retry logic: start with max_tokens, retry with half on 402 or token errors
+        current_max_tokens = max_tokens
+        retry_count = 0
+        max_retries = 2
+        
+        while retry_count <= max_retries:
+            try:
+                payload_dict: dict = {
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0,
+                }
+                if current_max_tokens:
+                    payload_dict["max_tokens"] = current_max_tokens
+                
+                response = requests.post(
+                    f"{self.base_url}/chat/completions",
+                    headers=self._headers(),
+                    json=payload_dict,
+                    timeout=60,
                 )
-            response.raise_for_status()
-        payload = response.json()
-        usage = payload.get("usage", {})
-        self._last_cost = float(usage.get("cost", 0.0) or 0.0)
-        return payload["choices"][0]["message"]["content"].strip()
+                
+                # Handle 402 (payment required) or token errors
+                if response.status_code == 402:
+                    # 402 usually means token limit; retry with half tokens
+                    if current_max_tokens and current_max_tokens > 64 and retry_count < max_retries:
+                        current_max_tokens = max(64, current_max_tokens // 2)
+                        retry_count += 1
+                        continue
+                    # If can't reduce further, raise
+                    detail = self._extract_error_message(response)
+                    raise RuntimeError(
+                        f"OpenRouter request failed ({response.status_code}): {detail}"
+                    )
+                
+                if not response.ok:
+                    detail = self._extract_error_message(response)
+                    if detail:
+                        raise RuntimeError(
+                            f"OpenRouter request failed ({response.status_code}): {detail}"
+                        )
+                    response.raise_for_status()
+                
+                payload = response.json()
+                usage = payload.get("usage", {})
+                self._last_cost = float(usage.get("cost", 0.0) or 0.0)
+                return payload["choices"][0]["message"]["content"].strip()
+                
+            except RuntimeError as exc:
+                # Check if error message mentions token limits
+                error_msg = str(exc).lower()
+                if ("token" in error_msg or "context length" in error_msg) and current_max_tokens and current_max_tokens > 64 and retry_count < max_retries:
+                    current_max_tokens = max(64, current_max_tokens // 2)
+                    retry_count += 1
+                    continue
+                raise
 
     def get_last_cost(self) -> float:
         return self._last_cost

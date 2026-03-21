@@ -43,6 +43,12 @@ flowchart TD
 : Sampling, prompting, model execution, evaluation, and scoring.
 - `benchmark_lib/models`
 : Provider-agnostic model interface and concrete adapters.
+  - `base_model.py` - Abstract base class for all models
+  - `openai_model.py` - OpenAI API adapter
+  - `openrouter_model.py` - OpenRouter API adapter
+  - `local_model.py` - Local OpenAI-compatible endpoints (Ollama)
+  - `huggingface_model.py` - Hugging Face models (local + Inference API)
+  - `echo_model.py` - Echo test model
 - `benchmark_lib/utils`
 : Cache, logger setup, and shared dataclasses.
 

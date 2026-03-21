@@ -86,6 +86,7 @@ Supported models:
 - openai
 - openrouter
 - local
+- huggingface
 
 You can select the exact model to test at runtime with `--model-name`.
 
@@ -103,6 +104,20 @@ If you see `model not found`, check installed models and use the exact tag:
 ollama list
 ```
 
+### Hugging Face model support
+
+Two modes available:
+
+1. **Local inference** (requires `transformers` + `torch`)
+   ```powershell
+   python run_benchmark.py --model huggingface --model-name meta-llama/Llama-2-7b --mode quick
+   ```
+
+2. **HF Inference API** (cloud-based, requires HF token)
+   ```powershell
+   python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --hf-use-inference-api --mode quick
+   ```
+
 ## .env setup
 
 Create a `.env` file (you can copy `.env.example`) and place your keys/default model names there.
@@ -118,11 +133,14 @@ Example:
 ```env
 OPENAI_API_KEY=...
 OPENROUTER_API_KEY=...
+HF_API_TOKEN=hf_your_token_here
+HF_USE_INFERENCE_API=false
+HF_DEVICE=cpu
 LOCAL_BASE_URL=http://localhost:11434/v1
 LOCAL_API_KEY=
 ```
 
-Model IDs are selected only in CLI via `--model-name`.
+Model IDs are selected only in CLI via `--model-name`. For HuggingFace, you can also pass arguments via `--hf-api-token`, `--hf-use-inference-api`, `--hf-device`.
 
 ## Test specific model names
 

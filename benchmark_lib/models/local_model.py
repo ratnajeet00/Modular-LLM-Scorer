@@ -46,60 +46,85 @@ class LocalModel(BaseModel):
     def _post(self, url: str, headers: dict[str, str], body: dict) -> requests.Response:
         return requests.post(url, headers=headers, json=body, timeout=60)
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, max_tokens: int | None = None) -> str:
         headers = {"Content-Type": "application/json"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
 
         errors: list[str] = []
+        
+        # Retry logic: start with max_tokens, retry with half on 402 or token errors
+        current_max_tokens = max_tokens
+        retry_count = 0
+        max_retries = 2
 
-        # Try OpenAI-compatible local endpoints first.
-        try:
-            response = self._post(
-                f"{self.base_url}/chat/completions",
-                headers=headers,
-                body={
+        while retry_count <= max_retries:
+            # Try OpenAI-compatible local endpoints first.
+            try:
+                body_dict: dict = {
                     "model": self.model,
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0,
-                },
-            )
-            response.raise_for_status()
-            payload = response.json()
-            usage = payload.get("usage", {})
-            self._last_cost = float(usage.get("cost", 0.0) or 0.0)
-            return self._parse_openai_chat_response(payload)
-        except requests.HTTPError as exc:
-            status = exc.response.status_code if exc.response is not None else None
-            body = ""
-            if exc.response is not None:
-                try:
-                    body = exc.response.text[:300]
-                except Exception:
-                    body = ""
-            errors.append(f"openai-chat {status}: {body}".strip())
-            body_lc = body.lower()
-            # If endpoint exists but model is missing/invalid, return immediately.
-            if "model" in body_lc and ("not found" in body_lc or "does not exist" in body_lc):
-                raise RuntimeError(errors[-1]) from exc
-            # Fall back to Ollama-native endpoint for missing route errors.
-            if status not in {404, 405}:
-                raise RuntimeError(errors[-1]) from exc
-        except Exception as exc:
-            errors.append(f"openai-chat error: {exc}")
+                }
+                if current_max_tokens:
+                    body_dict["max_tokens"] = current_max_tokens
+                
+                response = self._post(
+                    f"{self.base_url}/chat/completions",
+                    headers=headers,
+                    body=body_dict,
+                )
+                
+                # Handle 402 (payment required) or token errors
+                if response.status_code == 402:
+                    if current_max_tokens and current_max_tokens > 64 and retry_count < max_retries:
+                        current_max_tokens = max(64, current_max_tokens // 2)
+                        retry_count += 1
+                        continue
+                    response.raise_for_status()
+                
+                response.raise_for_status()
+                payload = response.json()
+                usage = payload.get("usage", {})
+                self._last_cost = float(usage.get("cost", 0.0) or 0.0)
+                return self._parse_openai_chat_response(payload)
+            except requests.HTTPError as exc:
+                status = exc.response.status_code if exc.response is not None else None
+                body = ""
+                if exc.response is not None:
+                    try:
+                        body = exc.response.text[:300]
+                    except Exception:
+                        body = ""
+                errors.append(f"openai-chat {status}: {body}".strip())
+                body_lc = body.lower()
+                # If endpoint exists but model is missing/invalid, return immediately.
+                if "model" in body_lc and ("not found" in body_lc or "does not exist" in body_lc):
+                    raise RuntimeError(errors[-1]) from exc
+                # Fall back to Ollama-native endpoint for missing route errors.
+                if status not in {404, 405}:
+                    raise RuntimeError(errors[-1]) from exc
+                break  # Exit retry loop and try Ollama fallback
+            except Exception as exc:
+                errors.append(f"openai-chat error: {exc}")
+                break  # Exit retry loop and try Ollama fallback
 
         # Ollama native endpoint fallback: /api/chat
         native_base = self._strip_v1_suffix(self.base_url)
         try:
+            body_dict: dict = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "stream": False,
+                "options": {"temperature": 0},
+            }
+            if current_max_tokens:
+                body_dict["options"]["num_predict"] = current_max_tokens
+            
             response = self._post(
                 f"{native_base}/api/chat",
                 headers=headers,
-                body={
-                    "model": self.model,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "stream": False,
-                    "options": {"temperature": 0},
-                },
+                body=body_dict,
             )
             response.raise_for_status()
             payload = response.json()

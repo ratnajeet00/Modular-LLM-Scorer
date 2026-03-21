@@ -11,7 +11,7 @@ from ..utils.cache import PromptCache
 from ..utils.logging import get_logger
 from ..utils.types import EvalRecord, NormalizedSample
 from .evaluator import evaluate
-from .prompt_builder import build_prompt
+from .prompt_builder import build_prompt, get_max_tokens
 
 
 logger = get_logger(__name__)
@@ -36,9 +36,9 @@ def _print_progress(done: int, total: int, started_at: float) -> None:
     sys.stderr.flush()
 
 
-def _call_with_timeout(model: BaseModel, prompt: str, timeout_seconds: float) -> str:
+def _call_with_timeout(model: BaseModel, prompt: str, timeout_seconds: float, max_tokens: int | None = None) -> str:
     with ThreadPoolExecutor(max_workers=1) as pool:
-        future = pool.submit(model.generate, prompt)
+        future = pool.submit(model.generate, prompt, max_tokens)
         try:
             return future.result(timeout=timeout_seconds)
         except FuturesTimeoutError as exc:
@@ -62,15 +62,38 @@ def run_inference(
     cache_lock = threading.Lock()
     progress_lock = threading.Lock()
     completed = 0
+    
+    # Auto-adjust timeout and retries for local models (slower inference)
+    # This applies to both Ollama (local:) and local Hugging Face (huggingface:) models
+    is_local_model = model.model_name.startswith("local:") or (
+        model.model_name.startswith("huggingface:") and not getattr(model, "use_inference_api", False)
+    )
+    if is_local_model:
+        # Local models are typically much slower (CPU inference)
+        # Increase timeout and retry count for better reliability
+        timeout_seconds = max(timeout_seconds, 120.0)  # Min 120s for local
+        retries = max(retries, 3)  # Min 3 retries for flaky local connections
+        logger.info(
+            "Local model detected: adjusted timeout=%s retries=%s",
+            timeout_seconds,
+            retries,
+        )
 
     if total == 0:
         return []
 
     if max_workers is None:
-        max_workers = min(16, max(4, (os.cpu_count() or 4) * 2))
+        # Reduced concurrency to 4-6 workers to prevent API failures
+        cpu_count = os.cpu_count() or 4
+        max_workers = min(6, max(4, cpu_count))
     max_workers = max(1, int(max_workers))
     worker_count = min(max_workers, total)
     logger.info("Inference concurrency: workers=%s", worker_count)
+    
+    # Reduce batch_size for local models to avoid memory and latency issues
+    if is_local_model:
+        batch_size = min(batch_size, 4)  # Cap at 4 for local models
+        logger.info("Local model: reduced batch_size to %s", batch_size)
 
     def _run_one(sample: NormalizedSample) -> EvalRecord:
         prompt = build_prompt(sample)
@@ -79,12 +102,15 @@ def run_inference(
         prediction = cached
         error: str | None = None
         cost = 0.0
+        
+        # Get domain-specific max_tokens (reduced for local models)
+        max_tokens = get_max_tokens(sample.domain, is_local_model=is_local_model)
 
         if prediction is None:
             attempt = 0
             while True:
                 try:
-                    prediction = _call_with_timeout(model, prompt, timeout_seconds)
+                    prediction = _call_with_timeout(model, prompt, timeout_seconds, max_tokens)
                     cost = float(model.get_last_cost())
                     with cache_lock:
                         cache.set(model.model_name, prompt, prediction)
