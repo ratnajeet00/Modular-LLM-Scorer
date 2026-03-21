@@ -61,7 +61,7 @@ Defined in `benchmark_lib/utils/types.py`.
 - explicit mode sizes
 - explicit domain weights
 - fixed difficulty ratio targets
-- strict non-LLM evaluation logic
+- deterministic non-LLM evaluation logic with bounded normalization/leniency rules
 
 ## Current domain model
 

@@ -13,6 +13,10 @@ This folder contains project documentation for Modular LLM Scorer.
 7. [Limitations and Notes](./limitations-and-notes.md)
 8. [Implemented Work Summary](./implemented-work-summary.md)
 
+Recent behavior changes are documented in:
+- [Evaluation and Scoring](./evaluation-and-scoring.md)
+- [Models and CLI](./models-and-cli.md)
+
 ## Quick map of key source files
 
 - Core API: `benchmark_lib/benchmark.py`
@@ -22,7 +26,7 @@ This folder contains project documentation for Modular LLM Scorer.
 - Sampling strategy: `benchmark_lib/engine/sampler.py`
 - Prompt templates: `benchmark_lib/engine/prompt_builder.py`
 - Inference loop: `benchmark_lib/engine/runner.py`
-- Evaluators: `benchmark_lib/engine/evaluator.py`
+- Evaluators (knowledge aliases/F1, executable code tests/output checks): `benchmark_lib/engine/evaluator.py`
 - Scoring: `benchmark_lib/engine/scorer.py`
 - Model interface/adapters: `benchmark_lib/models/*.py`
 - Cache and logging: `benchmark_lib/utils/*.py`

@@ -15,8 +15,11 @@ This file summarizes what has been implemented in the project.
 9. Strict rule-based evaluators for math, logic, knowledge, and code.
 10. Weighted scoring with per-dataset and per-domain metrics.
 11. Provider-agnostic model interface plus OpenAI and OpenRouter adapters.
-12. CLI for benchmark execution.
-13. Project-level README and full docs folder.
+12. Local model adapter with OpenAI-compatible and Ollama-native endpoint support.
+13. Knowledge evaluator with alias/paraphrase tolerance and strict numeric checks.
+14. Code evaluator with robust exec-based test harness and output-based fallback execution.
+15. CLI for benchmark execution.
+16. Project-level README and full docs folder.
 
 ## Current high-level execution flow
 

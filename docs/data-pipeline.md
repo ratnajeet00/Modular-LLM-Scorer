@@ -34,6 +34,11 @@ Canonical output fields:
 - difficulty
 - metadata
 
+Important metadata used by evaluators:
+- knowledge aliases (for acceptable answer variants)
+- code test artifacts (`test`, `tests`, `test_list`)
+- code execution hints (`entry_point`, `input`, `output`, `expected_output`)
+
 ## 3) Dataset-specific extractors
 
 Examples currently implemented:
@@ -50,6 +55,8 @@ Examples currently implemented:
 ## 4) Difficulty tagging
 
 After extraction, each sample is tagged easy/medium/hard by domain-specific heuristics from `benchmark_lib/dataset/difficulty.py`.
+
+SQuAD and TriviaQA normalization preserves additional answer variants in metadata for knowledge evaluator alias matching.
 
 ## 5) Hand-off to sampler
 

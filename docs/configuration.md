@@ -34,7 +34,13 @@ Example setup file is provided at `.env.example`.
 - `LOCAL_BASE_URL` (default: `http://localhost:11434/v1`)
 - `LOCAL_API_KEY` (optional)
 
+Local adapter endpoint behavior:
+- tries OpenAI-compatible `chat/completions`
+- falls back to Ollama-native `/api/chat` when route is unavailable
+
 Model names are not read from env. Select models only via CLI using `--model-name`.
+
+For Ollama, use the exact installed tag from `ollama list` (for example, `llama3.1:8b`).
 
 ## Cache
 

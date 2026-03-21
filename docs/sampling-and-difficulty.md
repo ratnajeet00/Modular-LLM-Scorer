@@ -10,6 +10,8 @@ Sampling implementation: `benchmark_lib/engine/sampler.py`
 
 Actual target is `min(mode_size, total_available_samples_after_filtering)`.
 
+When running with a restricted dataset root (for focused domain checks), effective sample count can be lower than global defaults.
+
 ## Domain set
 
 Target domains:

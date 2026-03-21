@@ -8,7 +8,7 @@ Deterministic, model-agnostic benchmark library for LLM evaluation across four d
 - knowledge
 - code
 
-The project is designed to run only on datasets already available in `data/raw_datasets` and uses strict rule-based scoring (no AI judge).
+The project is designed to run only on datasets already available in `data/raw_datasets` and uses deterministic rule-based scoring (no AI judge).
 
 ## Key behavior
 
@@ -89,6 +89,20 @@ Supported models:
 
 You can select the exact model to test at runtime with `--model-name`.
 
+### Local model endpoint compatibility
+
+The local adapter first tries OpenAI-compatible chat completions and then falls back to Ollama native chat when needed.
+
+Supported local endpoint styles:
+- `http://localhost:11434/v1` (OpenAI-compatible)
+- `http://localhost:11434` (Ollama native)
+
+If you see `model not found`, check installed models and use the exact tag:
+
+```powershell
+ollama list
+```
+
 ## .env setup
 
 Create a `.env` file (you can copy `.env.example`) and place your keys/default model names there.
@@ -127,7 +141,13 @@ python run_benchmark.py --model openrouter --model-name anthropic/claude-3.5-son
 Local model testing (OpenAI-compatible local endpoint):
 
 ```powershell
-python run_benchmark.py --model local --model-name llama3.1 --local-base-url http://localhost:11434/v1 --mode quick
+python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434/v1 --mode quick
+```
+
+If your local server is Ollama native only:
+
+```powershell
+python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434 --mode quick
 ```
 
 ## Environment variables
@@ -147,3 +167,9 @@ At run time, logs include:
 - sampled difficulty mix (easy/medium/hard)
 
 These logs let you verify that only 2 distinct datasets per domain are used and that easy/mid/hard stratification is active.
+
+## Evaluator highlights
+
+- Knowledge answers are evaluated with exact match first, then controlled leniency (aliases, short-span containment, token overlap), with strict numeric handling for numeric targets.
+- Code answers execute provided tests when available.
+- For code samples with expected output but no tests, generated code is executed and stdout is compared with expected output.

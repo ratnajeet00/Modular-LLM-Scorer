@@ -35,9 +35,12 @@ File: `benchmark_lib/models/openrouter_model.py`
 
 File: `benchmark_lib/models/local_model.py`
 
-- for local OpenAI-compatible endpoints
+- supports local OpenAI-compatible endpoints and Ollama-native fallback
 - default base URL: `http://localhost:11434/v1`
 - optional local API key support
+- endpoint strategy:
+  - try `<base_url>/chat/completions`
+  - on route-miss, fall back to `<base_without_v1>/api/chat`
 
 ### Echo model (CLI smoke model)
 
@@ -52,7 +55,6 @@ Entrypoint: `run_benchmark.py`
 ### Main args
 
 - `--dataset-path` (default `data/raw_datasets`)
-- `--model` (`echo`, `openai`, `openrouter`)
 - `--model` (`echo`, `openai`, `openrouter`, `local`)
 - `--model-name` (explicit model id to test; required for `openai`, `openrouter`, and `local`)
 - `--env-file` (default `.env`)
@@ -87,5 +89,15 @@ Examples:
 ```powershell
 python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick
 python run_benchmark.py --model openrouter --model-name openai/gpt-4o-mini --mode quick
-python run_benchmark.py --model local --model-name llama3.1 --local-base-url http://localhost:11434/v1 --mode quick
+python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434/v1 --mode quick
 ```
+
+## Local model troubleshooting
+
+1. Route not found (404):
+  - Keep `--local-base-url http://localhost:11434/v1` for OpenAI-compatible gateways.
+  - For native Ollama, `http://localhost:11434` also works via fallback.
+
+2. Model not found:
+  - Check installed model tags with `ollama list`.
+  - Use exact model tag in `--model-name` (for example `llama3.1:8b`, not `llama3.1`).
