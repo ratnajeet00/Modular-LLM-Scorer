@@ -12,6 +12,9 @@ from benchmark_lib.models.local_model import LocalModel
 from benchmark_lib.models.openai_model import OpenAIModel
 from benchmark_lib.models.openrouter_model import OpenRouterModel
 from benchmark_lib.models.huggingface_model import HuggingFaceModel
+from benchmark_lib.models.gemini_model import GeminiModel
+from benchmark_lib.models.together_model import TogetherModel
+from benchmark_lib.models.groq_model import GroqModel
 
 
 class EchoModel(BaseModel):
@@ -72,17 +75,32 @@ def build_model(
         token = hf_api_token or os.getenv("HF_API_TOKEN", "")
         use_api = hf_use_inference_api or os.getenv("HF_USE_INFERENCE_API", "").lower() in ("true", "1", "yes")
         device = hf_device or os.getenv("HF_DEVICE", "cpu")
-        
+
         # Log token source for debugging
         token_source = "CLI argument" if hf_api_token else "HF_API_TOKEN env variable" if token else "not set"
         print(f"[HF] Model: {model_id}, Token: {token_source}, Mode: {'API' if use_api else 'local'}, Device: {device}")
-        
+
         return HuggingFaceModel(
             model=model_id,
             api_token=token,
             use_inference_api=use_api,
             device=device,
         )
+    if name == "gemini":
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        model_id = model_name_override or "gemini-2.0-flash"
+        print(f"[Gemini] Using model: {model_id}")
+        return GeminiModel(api_key=api_key, model=model_id)
+    if name == "together":
+        api_key = os.getenv("TOGETHER_API_KEY", "")
+        model_id = model_name_override or "mistralai/Mistral-7B-Instruct-v0.3"
+        print(f"[Together] Using model: {model_id}")
+        return TogetherModel(api_key=api_key, model=model_id)
+    if name == "groq":
+        api_key = os.getenv("GROQ_API_KEY", "")
+        model_id = model_name_override or "llama-3.1-8b-instant"
+        print(f"[Groq] Using model: {model_id}")
+        return GroqModel(api_key=api_key, model=model_id)
     if name == "echo":
         return EchoModel()
     raise ValueError(f"Unsupported model: {name}")
@@ -141,7 +159,11 @@ def _aggregate_runs(model_name: str, mode: str, seeds: list[int], runs: list[dic
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run LLM benchmark")
     parser.add_argument("--dataset-path", default="data/raw_datasets", help="Root path containing datasets")
-    parser.add_argument("--model", default="echo", choices=["echo", "openai", "openrouter", "local", "huggingface"])
+    parser.add_argument(
+        "--model",
+        default="echo",
+        choices=["echo", "openai", "openrouter", "local", "huggingface", "gemini", "together", "groq"],
+    )
     parser.add_argument("--model-name", default=None, help="Model identifier to test (overrides provider env default)")
     parser.add_argument("--env-file", default=".env", help="Path to env file with API keys and model defaults")
     parser.add_argument("--local-base-url", default=None, help="Local provider base URL (e.g. http://localhost:11434/v1)")
@@ -153,8 +175,14 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--seeds", default=None, help="Comma-separated seeds for multi-seed runs, e.g. 42,43,44")
     parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--max-workers", type=int, default=None, help="Max concurrent model requests")
     parser.add_argument("--timeout-seconds", type=float, default=30.0)
     parser.add_argument("--retries", type=int, default=2)
+    parser.add_argument(
+        "--raw-output-log",
+        default="temp_eval/raw_outputs.jsonl",
+        help="JSONL path for per-sample raw outputs (question, prediction, error)",
+    )
     args = parser.parse_args()
 
     _load_env_file(args.env_file)
@@ -177,8 +205,10 @@ def main() -> None:
             model=model,
             mode=args.mode,
             batch_size=args.batch_size,
+            max_workers=args.max_workers,
             timeout_seconds=args.timeout_seconds,
             retries=args.retries,
+            raw_output_log_path=args.raw_output_log,
         )
         run_result["seed"] = seed
         runs.append(run_result)

@@ -24,6 +24,12 @@ Recent behavior changes are documented in:
 - [Models and CLI](./models-and-cli.md)
 - [Configuration](./configuration.md)
 
+Recent additions include:
+- provider coverage for Gemini, Together, and Groq
+- Groq local throttling controls for RPM/TPM limits
+- output-cleaning and validation-aware inference flow
+- raw-output JSONL tracing and worker-concurrency controls
+
 ## Quick map of key source files
 
 - Core API: `benchmark_lib/benchmark.py`

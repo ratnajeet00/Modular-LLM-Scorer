@@ -14,6 +14,8 @@ Optional extras:
 : `datasets`, `pyarrow`
 - `openai` extra:
 : `openai`
+- `groq` extra:
+: `groq`
 
 ## Environment variables
 
@@ -28,6 +30,20 @@ Example setup file is provided at `.env.example`.
 ### OpenRouter
 
 - `OPENROUTER_API_KEY`
+
+### Gemini
+
+- `GEMINI_API_KEY`
+
+### Together
+
+- `TOGETHER_API_KEY`
+
+### Groq
+
+- `GROQ_API_KEY`
+- `GROQ_RPM_LIMIT` (default `30`)
+- `GROQ_TPM_LIMIT` (default `6000`)
 
 ### Hugging Face
 
@@ -57,6 +73,13 @@ Prompt cache file defaults to:
 Implementation: `benchmark_lib/utils/cache.py`
 
 Cache key is SHA-256 hash of prompt + model name namespace.
+
+Cached responses are cleaned/validated before reuse; invalid cached entries are ignored and regenerated.
+
+## New CLI controls
+
+- `--max-workers` controls concurrent model requests.
+- `--raw-output-log` writes JSONL records with `question`, `prediction`, and `error` per sample.
 
 ## Logging
 

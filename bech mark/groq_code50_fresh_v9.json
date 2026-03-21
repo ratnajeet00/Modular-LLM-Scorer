@@ -1,0 +1,35 @@
+{
+  "model": "groq:llama-3.1-8b-instant",
+  "mode": "quick",
+  "accuracy": 0.58,
+  "per_dataset": {
+    "mbpp_full": 0.6,
+    "mbpp_sanitized": 0.56
+  },
+  "per_domain": {
+    "code": 0.58
+  },
+  "final_score": 0.087,
+  "total_questions": 50,
+  "correct_count": 29,
+  "wrong_count": 21,
+  "error_rate": 0.42,
+  "failure_rate": 0.42,
+  "non_empty_predictions": 29,
+  "empty_predictions": 21,
+  "call_error_count": 21,
+  "call_error_examples": [
+    "execution-error:test-failed",
+    "execution-error:invalid literal for int() with base 10: '(7'",
+    "execution-error:can only concatenate tuple (not \"int\") to tuple",
+    "execution-error:can only concatenate list (not \"int\") to list"
+  ],
+  "error_count": 21,
+  "error_examples": [
+    "execution-error:test-failed",
+    "execution-error:invalid literal for int() with base 10: '(7'",
+    "execution-error:can only concatenate tuple (not \"int\") to tuple",
+    "execution-error:can only concatenate list (not \"int\") to list"
+  ],
+  "cost": 0.0
+}

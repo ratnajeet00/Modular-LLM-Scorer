@@ -9,6 +9,8 @@
 5. OpenAI adapter currently reports zero cost (cost hook placeholder), while OpenRouter adapter uses response usage when present.
 6. Knowledge evaluator allows bounded leniency (aliases and overlap checks), so it is not strict exact-string-only matching.
 7. Local adapter supports endpoint fallback, but valid local model tags are still required.
+8. Groq adapter includes local RPM/TPM throttling to reduce provider 429s, but provider-side quotas still apply and can vary by account tier.
+9. Prompt cache can suppress live API traffic; clear `.benchmark_cache/prompt_cache.json` when validating dashboard-side API activity.
 
 ## Validation behavior
 

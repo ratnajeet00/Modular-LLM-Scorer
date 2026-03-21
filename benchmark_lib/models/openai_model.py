@@ -21,7 +21,7 @@ class OpenAIModel(BaseModel):
         kwargs = {
             "model": self.model,
             "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0,
+            "temperature": 0.2,
         }
         if max_tokens:
             kwargs["max_tokens"] = max_tokens

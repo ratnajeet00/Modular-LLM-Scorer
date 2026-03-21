@@ -87,8 +87,23 @@ Supported models:
 - openrouter
 - local
 - huggingface
+- gemini
+- together
+- groq
 
 You can select the exact model to test at runtime with `--model-name`.
+
+## Recent updates
+
+- Prompting is now task-specific with stricter output constraints for code, math, and QA tasks.
+- Output cleaning and validation are applied before evaluation.
+- Invalid outputs are retried (empty/malformed/invalid code patterns).
+- Generation temperature is set to `0.2` across adapters.
+- Domain max token budget is capped at `200`.
+- Raw output logging is available with `--raw-output-log` (JSONL).
+- CLI now supports `--max-workers` to control concurrency.
+- Groq includes built-in local throttling for RPM/TPM windows (defaults: 30 RPM, 6000 TPM).
+- Cache entries are normalized/validated before reuse to avoid stale malformed outputs.
 
 ### Local model endpoint compatibility
 
@@ -138,6 +153,11 @@ HF_USE_INFERENCE_API=false
 HF_DEVICE=cpu
 LOCAL_BASE_URL=http://localhost:11434/v1
 LOCAL_API_KEY=
+GEMINI_API_KEY=...
+TOGETHER_API_KEY=...
+GROQ_API_KEY=...
+GROQ_RPM_LIMIT=30
+GROQ_TPM_LIMIT=6000
 ```
 
 Model IDs are selected only in CLI via `--model-name`. For HuggingFace, you can also pass arguments via `--hf-api-token`, `--hf-use-inference-api`, `--hf-device`.
@@ -177,6 +197,80 @@ python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url 
 ### OpenRouter
 - OPENROUTER_API_KEY
 - OPENROUTER_MODEL (default: openai/gpt-4o-mini)
+
+### Gemini
+- GEMINI_API_KEY
+
+### Together
+- TOGETHER_API_KEY
+
+### Groq
+- GROQ_API_KEY
+- GROQ_RPM_LIMIT (default 30)
+- GROQ_TPM_LIMIT (default 6000)
+
+## CLI additions
+
+- `--max-workers`: controls concurrent model requests.
+- `--raw-output-log`: writes per-sample JSONL (`question`, `prediction`, `error`).
+
+## Model testing commands (3 per provider)
+
+### OpenAI
+
+```powershell
+python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick
+python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick --seed 7 --batch-size 4 --max-workers 2
+python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick --raw-output-log temp_eval/openai_quick.jsonl
+```
+
+### OpenRouter
+
+```powershell
+python run_benchmark.py --model openrouter --model-name openai/gpt-4o-mini --mode quick
+python run_benchmark.py --model openrouter --model-name anthropic/claude-3.5-sonnet --mode quick --max-workers 2
+python run_benchmark.py --model openrouter --model-name openai/gpt-4o-mini --mode quick --raw-output-log temp_eval/openrouter_quick.jsonl
+```
+
+### Local (Ollama/OpenAI-compatible)
+
+```powershell
+python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434/v1 --mode quick
+python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434 --mode quick
+python run_benchmark.py --model local --model-name llama3.1:8b --mode quick --max-workers 1 --raw-output-log temp_eval/local_quick.jsonl
+```
+
+### Hugging Face
+
+```powershell
+python run_benchmark.py --model huggingface --model-name meta-llama/Llama-2-7b --hf-device cpu --mode quick
+python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --hf-use-inference-api --mode quick
+python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --hf-use-inference-api --mode quick --raw-output-log temp_eval/hf_quick.jsonl
+```
+
+### Gemini
+
+```powershell
+python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode quick
+python run_benchmark.py --model gemini --model-name gemini-1.5-flash --mode quick --max-workers 2
+python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode quick --raw-output-log temp_eval/gemini_quick.jsonl
+```
+
+### Together
+
+```powershell
+python run_benchmark.py --model together --model-name mistralai/Mistral-7B-Instruct-v0.3 --mode quick
+python run_benchmark.py --model together --model-name meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo --mode quick --max-workers 2
+python run_benchmark.py --model together --model-name mistralai/Mistral-7B-Instruct-v0.3 --mode quick --raw-output-log temp_eval/together_quick.jsonl
+```
+
+### Groq
+
+```powershell
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1 --batch-size 2
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1 --raw-output-log temp_eval/groq_quick.jsonl
+```
 
 ## Validation logs
 

@@ -64,7 +64,7 @@ class LocalModel(BaseModel):
                 body_dict: dict = {
                     "model": self.model,
                     "messages": [{"role": "user", "content": prompt}],
-                    "temperature": 0,
+                    "temperature": 0.2,
                 }
                 if current_max_tokens:
                     body_dict["max_tokens"] = current_max_tokens
@@ -116,7 +116,7 @@ class LocalModel(BaseModel):
                 "model": self.model,
                 "messages": [{"role": "user", "content": prompt}],
                 "stream": False,
-                "options": {"temperature": 0},
+                "options": {"temperature": 0.2},
             }
             if current_max_tokens:
                 body_dict["options"]["num_predict"] = current_max_tokens

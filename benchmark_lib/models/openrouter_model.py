@@ -109,7 +109,7 @@ class OpenRouterModel(BaseModel):
                 payload_dict: dict = {
                     "model": self.model,
                     "messages": [{"role": "user", "content": prompt}],
-                    "temperature": 0,
+                    "temperature": 0.2,
                 }
                 if current_max_tokens:
                     payload_dict["max_tokens"] = current_max_tokens

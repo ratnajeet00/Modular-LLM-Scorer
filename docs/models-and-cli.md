@@ -4,91 +4,66 @@
 
 Base abstraction: `benchmark_lib/models/base_model.py`
 
-Required method:
+- Required: `generate(prompt: str, max_tokens: int | None = None) -> str`
+- Optional: `get_last_cost() -> float`
 
-- `generate(prompt: str, max_tokens: int | None = None) -> str`
-
-Optional cost hook:
-
-- `get_last_cost() -> float`
+All adapters run with `temperature=0.2` and accept domain/token limits from the runner.
 
 ## Implemented adapters
 
-### OpenAI adapter
+### OpenAI
 
 File: `benchmark_lib/models/openai_model.py`
 
 - requires `OPENAI_API_KEY`
-- uses chat completions API
-- fixed `temperature=0`
-- domain-specific `max_tokens` (256-512)
+- chat completions
 
-### OpenRouter adapter
+### OpenRouter
 
 File: `benchmark_lib/models/openrouter_model.py`
 
 - requires `OPENROUTER_API_KEY`
-- uses HTTP endpoint `/chat/completions`
-- fixed `temperature=0`
-- reads `usage.cost` when provided
-- automatic retry on 402 (payment required) with token reduction
-- domain-specific `max_tokens` (256-512)
+- chat completions over HTTP
+- retries token-pressure errors by reducing `max_tokens`
 
-### Local adapter (Ollama)
+### Local (OpenAI-compatible + Ollama-native fallback)
 
 File: `benchmark_lib/models/local_model.py`
 
-- supports local OpenAI-compatible endpoints and Ollama-native fallback
-- default base URL: `http://localhost:11434/v1`
-- optional local API key support
-- endpoint strategy:
-  - try `<base_url>/chat/completions`
-  - on route-miss, fall back to `<base_without_v1>/api/chat`
-- **Auto-optimization for local models**:
-  - Timeout increased to 120+ seconds
-  - Retries increased to 3+
-  - Batch size capped at 4
-  - Tokens reduced 50% for faster inference
+- supports OpenAI-style local endpoints and native Ollama fallback
+- default URL: `http://localhost:11434/v1`
+- falls back to `/api/chat` when OpenAI route is unavailable
 
-### Hugging Face adapter
+### Hugging Face
 
 File: `benchmark_lib/models/huggingface_model.py`
 
-**Two modes:**
+- local transformers mode (`--hf-device cpu|cuda|mps`)
+- Inference API mode (`--hf-use-inference-api`)
+- automatic fallback to chat completions for providers that do not support `text_generation`
 
-1. **Local Inference** (default)
-   - Uses `transformers` pipeline for CPU/GPU/MPS inference
-   - Device selection: `cpu`, `cuda`, `mps`
-   - No internet required
-   - Respects auto-optimization for local models
+### Gemini
 
-2. **Inference API**
-   - Uses HF Inference API for cloud-based hosted inference
-   - Requires `HF_API_TOKEN` from https://huggingface.co/settings/tokens
-   - **Automatic fallback for custom providers**:
-     - Attempts standard `text_generation` task first
-     - Falls back to `chat.completions` API when provider doesn't support text_generation
-     - Enables support for models like DeepSeek on nscale provider
-   - Domain-specific `max_tokens` (256-512)
+File: `benchmark_lib/models/gemini_model.py`
 
-**Examples:**
+- requires `GEMINI_API_KEY`
+- endpoint probe and retry behavior for stable/preview API versions
 
-```bash
-# Local inference on CPU
-python run_benchmark.py --model huggingface --model-name meta-llama/Llama-2-7b --hf-device cpu --mode quick
+### Together
 
-# Local inference on GPU
-python run_benchmark.py --model huggingface --model-name meta-llama/Llama-2-13b --hf-device cuda --mode quick
+File: `benchmark_lib/models/together_model.py`
 
-# HF Inference API
-python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --hf-use-inference-api --mode quick
-```
+- requires `TOGETHER_API_KEY`
+- OpenAI-compatible chat completions with retry/backoff
 
-### Echo model (CLI smoke model)
+### Groq
 
-Defined in `run_benchmark.py`.
+File: `benchmark_lib/models/groq_model.py`
 
-Behavior: returns prompt text as prediction (used for deterministic pipeline smoke testing).
+- requires `GROQ_API_KEY`
+- local throttling to enforce rate windows
+  - `GROQ_RPM_LIMIT` (default 30)
+  - `GROQ_TPM_LIMIT` (default 6000)
 
 ## CLI
 
@@ -97,74 +72,78 @@ Entrypoint: `run_benchmark.py`
 ### Main args
 
 - `--dataset-path` (default `data/raw_datasets`)
-- `--model` (`echo`, `openai`, `openrouter`, `local`, `huggingface`)
-- `--model-name` (explicit model id to test; required for `openai`, `openrouter`, `local`, and `huggingface`)
-- `--env-file` (default `.env`)
-- `--local-base-url` (for local model endpoint, Ollama)
-- `--local-api-key` (optional local endpoint key)
-- `--hf-api-token` (Hugging Face API token for Inference API)
-- `--hf-use-inference-api` (use HF Inference API instead of local inference for HuggingFace models)
-- `--hf-device` (device for local HF inference: `cpu`, `cuda`, `mps`)
+- `--model` (`echo`, `openai`, `openrouter`, `local`, `huggingface`, `gemini`, `together`, `groq`)
+- `--model-name` (explicit model id)
 - `--mode` (`quick`, `half`, `full`)
-- `--seed`
+- `--seed` / `--seeds`
 - `--batch-size`
+- `--max-workers`
 - `--timeout-seconds`
 - `--retries`
+- `--raw-output-log`
+- `--env-file`
+- local/HF specific args (`--local-base-url`, `--local-api-key`, `--hf-api-token`, `--hf-use-inference-api`, `--hf-device`)
 
-### Example
+## Provider testing commands (3 per provider)
 
-```powershell
-python run_benchmark.py \
-  --dataset-path data/raw_datasets \
-  --model echo \
-  --mode quick \
-  --batch-size 16 \
-  --timeout-seconds 5 \
-  --retries 0
-```
-
-Result is printed as JSON.
-
-## Runtime model selection
-
-`--model-name` is the only way to choose model IDs at runtime for provider/local models.
-
-Examples:
+### OpenAI
 
 ```powershell
 python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick
-python run_benchmark.py --model openrouter --model-name openai/gpt-4o-mini --mode quick
-python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434/v1 --mode quick
-python run_benchmark.py --model huggingface --model-name meta-llama/Llama-2-7b --hf-device cpu --mode quick
-python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --hf-use-inference-api --mode quick
+python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick --max-workers 2 --seed 7
+python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick --raw-output-log temp_eval/openai_quick.jsonl
 ```
 
-## Local model troubleshooting
+### OpenRouter
 
-1. Route not found (404):
-  - Keep `--local-base-url http://localhost:11434/v1` for OpenAI-compatible gateways.
-  - For native Ollama, `http://localhost:11434` also works via fallback.
+```powershell
+python run_benchmark.py --model openrouter --model-name openai/gpt-4o-mini --mode quick
+python run_benchmark.py --model openrouter --model-name anthropic/claude-3.5-sonnet --mode quick --max-workers 2
+python run_benchmark.py --model openrouter --model-name openai/gpt-4o-mini --mode quick --raw-output-log temp_eval/openrouter_quick.jsonl
+```
 
-2. Model not found:
-  - Check installed model tags with `ollama list`.
-  - Use exact model tag in `--model-name` (for example `llama3.1:8b`, not `llama3.1`).
+### Local
 
-## Hugging Face troubleshooting
+```powershell
+python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434/v1 --mode quick
+python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434 --mode quick
+python run_benchmark.py --model local --model-name llama3.1:8b --mode quick --max-workers 1 --raw-output-log temp_eval/local_quick.jsonl
+```
 
-1. **401 Unauthorized / Invalid username or password**:
-   - Ensure `HF_API_TOKEN` is set correctly from https://huggingface.co/settings/tokens
-   - Token must be a **Pro or user-tier token with API access**
-   - Either set in `.env` or pass via CLI: `--hf-api-token your_token`
+### Hugging Face
 
-2. **Task not supported** (for custom providers):
-   - System automatically detects and falls back to `chat.completions` API
-   - Works for models like DeepSeek on nscale provider
-   - No user action required
+```powershell
+python run_benchmark.py --model huggingface --model-name meta-llama/Llama-2-7b --hf-device cpu --mode quick
+python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --hf-use-inference-api --mode quick
+python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --hf-use-inference-api --mode quick --raw-output-log temp_eval/hf_quick.jsonl
+```
 
-3. **CUDA/GPU not available**:
-   - Use `--hf-device cpu` for CPU-only inference
-   - Or install CUDA-enabled PyTorch for `--hf-device cuda`
+### Gemini
 
-4. **Model not found**:
-   - Use exact HF model ID format: `owner/model` (e.g., `meta-llama/Llama-2-7b`)
-   - Check model page on https://huggingface.co/models
+```powershell
+python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode quick
+python run_benchmark.py --model gemini --model-name gemini-1.5-flash --mode quick --max-workers 2
+python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode quick --raw-output-log temp_eval/gemini_quick.jsonl
+```
+
+### Together
+
+```powershell
+python run_benchmark.py --model together --model-name mistralai/Mistral-7B-Instruct-v0.3 --mode quick
+python run_benchmark.py --model together --model-name meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo --mode quick --max-workers 2
+python run_benchmark.py --model together --model-name mistralai/Mistral-7B-Instruct-v0.3 --mode quick --raw-output-log temp_eval/together_quick.jsonl
+```
+
+### Groq
+
+```powershell
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1 --batch-size 2
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1 --raw-output-log temp_eval/groq_quick.jsonl
+```
+
+## Troubleshooting notes
+
+- If dashboard usage looks missing, ensure shell key and `.env` key point to the same account.
+- Clear cache for live-call verification: remove `.benchmark_cache/prompt_cache.json`.
+- For local models, use exact tag from `ollama list`.

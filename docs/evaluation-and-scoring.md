@@ -58,6 +58,15 @@ Features:
 - retry loop
 - prompt-level cache
 - per-record cost capture
+- output cleaning before evaluation
+- output format validation with retry on invalid responses
+- raw output JSONL logging (`question`, `prediction`, `error`)
+
+Current behavior details:
+
+- math outputs can be normalized from simple expression-style replies to numeric values
+- code outputs are kept as full runnable code; fenced wrappers are removed when present
+- malformed or stale cached answers are ignored and refreshed
 
 ## Scoring
 

@@ -54,6 +54,7 @@ class Benchmark:
         timeout_seconds: float = 30.0,
         cache_path: str | None = None,
         max_workers: int | None = None,
+        raw_output_log_path: str | None = "temp_eval/raw_outputs.jsonl",
     ) -> dict:
         selected = stratified_sample(self.samples, mode=mode, seed=self.seed)
         logger.info("Running benchmark on %s samples in mode=%s", len(selected), mode)
@@ -82,6 +83,7 @@ class Benchmark:
             batch_size=batch_size,
             cache=PromptCache(cache_path),
             max_workers=max_workers,
+            raw_output_log_path=raw_output_log_path,
         )
 
         non_empty_predictions = sum(1 for r in records if r.prediction.strip())

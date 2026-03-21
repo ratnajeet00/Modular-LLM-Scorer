@@ -80,7 +80,7 @@ class HuggingFaceModel(BaseModel):
         """Generate using HF Inference API with fallback for custom providers."""
         kwargs = {
             "max_new_tokens": max_tokens or 256,
-            "temperature": 0.0,  # Match other models
+            "temperature": 0.2,
         }
         
         try:
@@ -107,7 +107,7 @@ class HuggingFaceModel(BaseModel):
                     }
                 ],
                 max_tokens=max_tokens or 256,
-                temperature=0.0,
+                temperature=0.2,
             )
             
             # Extract text from response
@@ -127,7 +127,7 @@ class HuggingFaceModel(BaseModel):
         outputs = self._pipeline(
             prompt,
             max_new_tokens=max_tokens or 256,
-            temperature=0.0,  # Match other models
+            temperature=0.2,
             top_p=1.0,
             do_sample=False,  # Greedy decoding for determinism
             num_return_sequences=1,

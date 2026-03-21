@@ -14,12 +14,19 @@ This file summarizes what has been implemented in the project.
 8. Inference loop with timeout, retry, cache, and cost hooks.
 9. Strict rule-based evaluators for math, logic, knowledge, and code.
 10. Weighted scoring with per-dataset and per-domain metrics.
-11. Provider-agnostic model interface plus OpenAI and OpenRouter adapters.
+11. Provider-agnostic model interface plus OpenAI, OpenRouter, Gemini, Together, and Groq adapters.
 12. Local model adapter with OpenAI-compatible and Ollama-native endpoint support.
 13. Knowledge evaluator with alias/paraphrase tolerance and strict numeric checks.
 14. Code evaluator with robust exec-based test harness and output-based fallback execution.
 15. CLI for benchmark execution.
 16. Project-level README and full docs folder.
+17. Task-specific prompt policy updates for code/math/knowledge datasets.
+18. Output cleaning and output-format validation before evaluation.
+19. Retry-on-invalid-output handling in inference loop.
+20. Raw output JSONL logging for debugging and analysis.
+21. Cache reuse hardened by cleaning/validating cached responses before scoring.
+22. Groq local rate-window throttling for RPM/TPM constraints.
+23. CLI extensions for `--max-workers` and `--raw-output-log`.
 
 ## Current high-level execution flow
 
