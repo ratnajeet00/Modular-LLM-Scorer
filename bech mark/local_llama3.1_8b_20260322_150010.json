@@ -1,0 +1,41 @@
+{
+  "model": "local:llama3.1:8b",
+  "mode": "quick",
+  "accuracy": 0.25,
+  "per_dataset": {
+    "gsm8k_main": 0.307692,
+    "gsm8k_socratic": 0.083333,
+    "mbpp_full": 0.384615,
+    "mbpp_sanitized": 0.583333,
+    "natural_questions": 0.076923,
+    "proofwriter": 0.153846,
+    "reclor": 0.333333,
+    "squad": 0.083333
+  },
+  "per_domain": {
+    "code": 0.48,
+    "knowledge": 0.08,
+    "logic": 0.24,
+    "math": 0.2
+  },
+  "final_score": 0.21,
+  "total_questions": 100,
+  "correct_count": 25,
+  "wrong_count": 75,
+  "error_rate": 0.75,
+  "failure_rate": 0.13,
+  "non_empty_predictions": 87,
+  "empty_predictions": 13,
+  "call_error_count": 13,
+  "call_error_examples": [
+    "execution-error:test-failed",
+    "execution-error:get_col() takes 2 positional arguments but 3 were given"
+  ],
+  "error_count": 13,
+  "error_examples": [
+    "execution-error:test-failed",
+    "execution-error:get_col() takes 2 positional arguments but 3 were given"
+  ],
+  "cost": 0.0,
+  "seed": 42
+}

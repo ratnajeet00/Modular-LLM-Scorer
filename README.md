@@ -10,6 +10,12 @@ Deterministic, model-agnostic benchmark library for LLM evaluation across four d
 
 The project is designed to run only on datasets already available in `data/raw_datasets` and uses deterministic rule-based scoring (no AI judge).
 
+## Recent Updates
+
+- **Enhanced Logic Handling**: Robust boolean (T/F) normalization and single-letter answer extraction.
+- **Strict Prompting**: Enforces final numeric answers for Math and short phrases for Knowledge.
+- **Local Model Optimization**: Automatic timeout/retry adjustment and batch size capping for stability.
+
 ## Key behavior
 
 ### 1) Exactly 2 datasets per domain are used
@@ -39,7 +45,7 @@ Within each selected dataset, sampling is stratified by difficulty:
 If a bucket is short (for example, not enough hard examples), remaining slots are filled from the remaining samples in that selected dataset.
 
 ### 4) Mode sizes
-- quick: 500 questions
+- quick: 100 questions
 - half: 1500 questions
 - full: 6000 questions
 
@@ -99,7 +105,7 @@ You can select the exact model to test at runtime with `--model-name`.
 - Output cleaning and validation are applied before evaluation.
 - Invalid outputs are retried (empty/malformed/invalid code patterns).
 - Generation temperature is set to `0.2` across adapters.
-- Domain max token budget is capped at `200`.
+- Domain max token budget is `512` for math/logic/knowledge and `1024` for code.
 - Raw output logging is available with `--raw-output-log` (JSONL).
 - CLI now supports `--max-workers` to control concurrency.
 - Groq includes built-in local throttling for RPM/TPM windows (defaults: 30 RPM, 6000 TPM).
@@ -251,8 +257,8 @@ python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1
 ### Gemini
 
 ```powershell
-python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode quick
-python run_benchmark.py --model gemini --model-name gemini-1.5-flash --mode quick --max-workers 2
+python run_benchmark.py --model gemini --model-name gemini-2.5-flash-lite --mode quick
+python run_benchmark.py --model gemini --model-name gemini-2.5-flash --mode quick --max-workers 2
 python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode quick --raw-output-log temp_eval/gemini_quick.jsonl
 ```
 

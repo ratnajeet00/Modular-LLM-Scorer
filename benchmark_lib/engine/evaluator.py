@@ -102,7 +102,12 @@ def _eval_math(answer: str, prediction: str, tolerance: float = 1e-3) -> bool:
 
 
 def _eval_logic(sample: NormalizedSample, prediction: str) -> bool:
-    pred = prediction.strip()
+    pred = prediction.strip().lower()
+    if pred in ["true", "t"]:
+        pred = "true"
+    elif pred in ["false", "f"]:
+        pred = "false"
+
     if sample.options:
         answer_norm = _norm_text(sample.answer)
         if _norm_text(pred) == answer_norm:
@@ -114,6 +119,7 @@ def _eval_logic(sample: NormalizedSample, prediction: str) -> bool:
             if 0 <= idx < len(sample.options):
                 return _norm_text(sample.options[idx]) == answer_norm
         return False
+        
     return _norm_text(pred) == _norm_text(sample.answer)
 
 
@@ -134,10 +140,61 @@ def _stringify_expected(value: object) -> str:
     return str(value)
 
 
+# ---------- Fix 3: deprecated collections imports (Python 3.10+) ----------
+_DEPRECATED_COLLECTIONS_IMPORTS = {
+    "from collections import Iterable":       "from collections.abc import Iterable",
+    "from collections import Iterator":       "from collections.abc import Iterator",
+    "from collections import Generator":      "from collections.abc import Generator",
+    "from collections import Callable":       "from collections.abc import Callable",
+    "from collections import Mapping":        "from collections.abc import Mapping",
+    "from collections import MutableMapping": "from collections.abc import MutableMapping",
+    "from collections import Sequence":       "from collections.abc import Sequence",
+    "from collections import MutableSequence":"from collections.abc import MutableSequence",
+    "from collections import Set":           "from collections.abc import Set",
+    "from collections import MutableSet":    "from collections.abc import MutableSet",
+    "from collections import Hashable":      "from collections.abc import Hashable",
+    "from collections import Sized":         "from collections.abc import Sized",
+    "from collections import Container":     "from collections.abc import Container",
+    "from collections import ByteString":    "from collections.abc import ByteString",
+}
+
+
+def _patch_deprecated_imports(code: str) -> str:
+    """Fix deprecated 'from collections import <ABC>' for Python 3.10+."""
+    for old, new in _DEPRECATED_COLLECTIONS_IMPORTS.items():
+        code = code.replace(old, new)
+    return code
+
+
+# ---------- Fix 4: safe stdlib imports prefix ----------
+_SAFE_IMPORTS = (
+    "import math\n"
+    "import re\n"
+    "import sys\n"
+    "import itertools\n"
+    "import functools\n"
+    "import collections\n"
+    "import heapq\n"
+    "import bisect\n"
+    "import string\n"
+    "import operator\n"
+    "import copy\n"
+)
+
+
+def _prepend_safe_imports(code: str) -> str:
+    """Prepend commonly-needed stdlib imports so model-forgotten imports don't crash."""
+    return _SAFE_IMPORTS + "\n" + code
+
+
 def _eval_code(sample: NormalizedSample, prediction: str) -> tuple[bool, str | None]:
     code = _extract_code_block(prediction)
     if not code:
         return False, "empty-code"
+
+    # --- Apply code patches before execution ---
+    code = _patch_deprecated_imports(code)   # Fix 3
+    code = _prepend_safe_imports(code)        # Fix 4
 
     test_list = sample.metadata.get("tests", [])
     test_blob = sample.metadata.get("test", "")

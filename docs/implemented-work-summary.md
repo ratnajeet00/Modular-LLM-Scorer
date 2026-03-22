@@ -27,6 +27,9 @@ This file summarizes what has been implemented in the project.
 21. Cache reuse hardened by cleaning/validating cached responses before scoring.
 22. Groq local rate-window throttling for RPM/TPM constraints.
 23. CLI extensions for `--max-workers` and `--raw-output-log`.
+24. Enhanced logic evaluation with boolean normalization and single-letter extraction.
+25. Strict prompt enforcement for math final answers and knowledge conciseness.
+26. Local model optimizations (auto-timeout adjustment, retry increase, batch size caps).
 
 ## Current high-level execution flow
 

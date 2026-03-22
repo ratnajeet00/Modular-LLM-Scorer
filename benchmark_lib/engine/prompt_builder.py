@@ -10,22 +10,39 @@ BASE_INSTRUCTION = (
     "You are solving a problem from a benchmark dataset.\n\n"
     "Rules:\n"
     "- Give ONLY the final answer.\n"
-    "- For coding questions: return COMPLETE runnable Python code.\n"
+    "- For math/logic/knowledge tasks: do NOT write code.\n"
+    "- Do NOT use print(...), return ..., or markdown code fences for non-code tasks.\n"
+    "- For coding questions: return ONE complete runnable Python function only.\n"
     "- Do NOT omit function definitions.\n"
     "- Do NOT give explanation unless asked.\n"
     "- Ensure variables and functions are defined.\n"
-    "- Output must be directly executable."
+    "- Output must match task format exactly."
 )
 
 # Domain defaults.
 PROMPT_TEMPLATES = {
-    "math": "Solve step-by-step internally, but return ONLY the final numeric answer.",
-    "logic": "Choose the correct option and return ONLY the final answer.",
-    "knowledge": "Answer in one short sentence. No explanation.",
+    "math": (
+        "Solve and give ONLY the final numeric answer.\n"
+        "Do not explain."
+    ),
+    "logic": (
+        "Read the question carefully.\n"
+        "Then RETURN ONLY ONE LETTER: A, B, C, or D.\n"
+        "NO explanation. NO code. NO full sentences.\n"
+        "Format: Just the letter (e.g., A). WRONG: 'The answer is A', 'Option A'"
+    ),
+    "knowledge": (
+        "Give a short exact answer.\n"
+        "If numeric -> return ONLY number.\n"
+        "Do NOT say \"I don't know\"."
+    ),
     "code": (
         "Write a COMPLETE Python function.\n"
         "\n"
         "Rules:\n"
+        "- Write ONLY the function with EXACT name and parameters as given.\n"
+        "- Do NOT change the function signature in any way.\n"
+        "- Do NOT rename, add, or remove arguments.\n"
         "- Use correct input types (list, tuple, int).\n"
         "- Do NOT assume fixed length.\n"
         "- Handle edge cases (empty list, small input).\n"
@@ -36,20 +53,35 @@ PROMPT_TEMPLATES = {
 
 # Dataset-specific prompt overrides.
 DATASET_PROMPT_OVERRIDES = {
-    "mbpp_full": "Write a complete Python function to solve the problem. Return ONLY code. No explanation.",
-    "mbpp_sanitized": "Write a complete Python function to solve the problem. Return ONLY code. No explanation.",
+    "mbpp_full": (
+        "Write ONLY the function with the EXACT name and parameters as given.\n"
+        "Do NOT change the function signature.\n"
+        "Do NOT rename, add, or remove arguments.\n"
+        "Return ONLY the function code. No explanation."
+    ),
+    "mbpp_sanitized": (
+        "Write ONLY the function with the EXACT name and parameters as given.\n"
+        "Do NOT change the function signature.\n"
+        "Do NOT rename, add, or remove arguments.\n"
+        "Return ONLY the function code. No explanation."
+    ),
     "gsm8k_main": "Solve step-by-step internally, but return ONLY the final numeric answer.",
     "gsm8k_socratic": "Solve step-by-step internally, but return ONLY the final numeric answer.",
     "squad": "Answer in one short sentence. No explanation.",
     "natural_questions": "Answer in one short sentence. No explanation.",
+    "proofwriter": (
+        "Read the context and question.\n"
+        "Determine if the statement is True or False based on the context.\n"
+        "Return ONLY: True or False."
+    ),
 }
 
 # Domain-specific max_tokens limits
 MAX_TOKENS_BY_DOMAIN = {
-    "math": 200,
-    "logic": 200,
-    "knowledge": 200,
-    "code": 200,
+    "math": 512,
+    "logic": 512,
+    "knowledge": 512,
+    "code": 1024,
 }
 
 
@@ -76,9 +108,9 @@ def get_max_tokens(domain: str, is_local_model: bool = False) -> int:
         max_tokens limit for the domain
     """
     if is_local_model:
-        return 200
+        return MAX_TOKENS_BY_DOMAIN.get(domain, 512)
 
-    return MAX_TOKENS_BY_DOMAIN.get(domain, 200)
+    return MAX_TOKENS_BY_DOMAIN.get(domain, 512)
 
 
 def _build_example_input_hint(sample: NormalizedSample) -> str:
@@ -130,9 +162,45 @@ def build_prompt(sample: NormalizedSample) -> str:
             )
             prompt = f"{prompt}{_build_example_input_hint(sample)}"
     
-    # Add options for logic domain
-    if sample.domain == "logic" and sample.options:
-        options_text = "\n".join([f"{chr(65+i)}. {opt}" for i, opt in enumerate(sample.options)])
-        prompt = f"{prompt}\n\nOptions:\n{options_text}"
+    # Add options for logic domain with explicit MCQ response slot.
+    if sample.domain == "logic":
+        if sample.options:
+            # Multiple choice format (Reclor, etc.)
+            options_text = "\n".join([f"{chr(65+i)}. {opt}" for i, opt in enumerate(sample.options)])
+            prompt = (
+                f"{prompt}\n\n"
+                f"Options:\n{options_text}\n\n"
+                "==MANDATORY==\n"
+                "Answer with ONLY the letter (A, B, C, or D).\n"
+                "NO explanation. NO code. NO period.\n\n"
+                "Answer: "
+            )
+        else:
+            # True/False format (ProofWriter)
+            prompt = (
+                f"{prompt}\n\n"
+                "==MANDATORY==\n"
+                "Answer with ONLY: True or False\n"
+                "NO explanation. NO code. NO period.\n\n"
+                "Answer: "
+            )
+
+    if sample.domain in ("math", "knowledge"):
+        if sample.domain == "math":
+            prompt = (
+                f"{prompt}\n\n"
+                "==MANDATORY==\n"
+                "Answer with ONLY a number (e.g., 42, 3.14, -5).\n"
+                "NO code. NO explanation. NO period.\n\n"
+                "Answer: "
+            )
+        else:  # knowledge
+            prompt = (
+                f"{prompt}\n\n"
+                "==MANDATORY==\n"
+                "Answer with ONLY the short phrase (max 10 words).\n"
+                "NO code. NO explanation.\n\n"
+                "Answer: "
+            )
     
     return prompt

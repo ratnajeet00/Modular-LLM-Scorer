@@ -12,6 +12,7 @@ This folder contains project documentation for Modular LLM Scorer.
 6. [Configuration](./configuration.md)
 7. [Limitations and Notes](./limitations-and-notes.md)
 8. [Implemented Work Summary](./implemented-work-summary.md)
+9. [Reference Models](./which%20models.md)
 
 ## Additional Guides
 

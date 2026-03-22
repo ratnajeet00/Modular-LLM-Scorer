@@ -4,7 +4,7 @@ Sampling implementation: `benchmark_lib/engine/sampler.py`
 
 ## Mode sizes
 
-- quick: 500
+- quick: 100
 - half: 1500
 - full: 6000
 

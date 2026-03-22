@@ -33,6 +33,10 @@ File: `benchmark_lib/models/local_model.py`
 - supports OpenAI-style local endpoints and native Ollama fallback
 - default URL: `http://localhost:11434/v1`
 - falls back to `/api/chat` when OpenAI route is unavailable
+- **automatic optimizations**:
+  - increases timeout to 120s
+  - increases retries to 3
+  - caps batch size at 4 for stability
 
 ### Hugging Face
 

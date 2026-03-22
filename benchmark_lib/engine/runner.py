@@ -26,6 +26,10 @@ RETRIABLE_CODE_ERROR_MARKERS = (
     "typeerror",
     "list index out of range",
     "test-failed",
+    "empty-output",
+    "timed out",
+    "timeout",
+    "empty-code",
 )
 
 
@@ -34,6 +38,42 @@ def _is_empty_response(res: str | None) -> bool:
         return True
     stripped = res.strip()
     return stripped == "" or stripped == "```"
+
+
+def _looks_like_code(text: str) -> bool:
+    s = (text or "").strip()
+    if not s:
+        return False
+    if "```" in s:
+        return True
+    lower = s.lower()
+    # Extended code markers to catch more patterns
+    code_markers = (
+        "def ",
+        "class ",
+        "import ",
+        "from ",
+        "print(",
+        "return ",
+        "if __name__",
+        "for ",
+        "while ",
+        "try:",
+        "except ",
+        "lambda ",
+        "yield ",
+    )
+    if any(marker in lower for marker in code_markers):
+        return True
+    # Check for function call patterns like print(...), len(...), etc.
+    if "(" in s and ")" in s:
+        func_match = re.match(r"^\w+\s*\(", s)
+        if func_match:
+            func_name = func_match.group(0).split("(")[0].lower()
+            # Reject common function calls unless they're acceptable words
+            if func_name not in ("option", "answer", "result", "the", "a", "an", "option"):
+                return True
+    return False
 
 
 class _RenameFunctionSymbol(ast.NodeTransformer):
@@ -177,6 +217,21 @@ def _safe_eval_arithmetic(expr: str) -> float | None:
     return float(result) if isinstance(result, (int, float)) else None
 
 
+def _extract_final_number(text: str) -> str | None:
+    numbers = re.findall(r"-?\d+(?:\.\d+)?", (text or "").replace(",", ""))
+    if not numbers:
+        return None
+    value = numbers[-1]
+    if "." in value:
+        try:
+            num = float(value)
+            if num.is_integer():
+                return str(int(num))
+        except ValueError:
+            return value
+    return value
+
+
 def clean_output(sample: NormalizedSample, text: str) -> str:
     domain = sample.domain
     raw = (text or "").strip()
@@ -204,12 +259,37 @@ def clean_output(sample: NormalizedSample, text: str) -> str:
             if simplified.is_integer():
                 return str(int(simplified))
             return str(simplified)
+        numeric = _extract_final_number(raw)
+        if numeric is not None:
+            return numeric
+
+    if domain == "logic":
+        # Normalize logic domain output to single option letter (A, B, C, D) or True/False
+        lines = [ln.strip() for ln in raw.split("\n") if ln.strip()]
+        if lines:
+            final_line = lines[-1].strip()
+            # Remove common prefixes and colons
+            final_line = re.sub(r"^(answer|final answer|result|option)\s*[:=\-]?\s*", "", final_line, flags=re.IGNORECASE).strip()
+            final_line = re.sub(r"^[\(\[]", "", final_line).strip()
+            final_line = re.sub(r"[\)\]]$", "", final_line).strip()
+            normalized = final_line.lower().strip()
+            # Try to extract option letter (A, B, C, D, etc) as first priority
+            if len(normalized) > 0 and normalized[0] in "abcdefgh":
+                return normalized[0].upper()
+            # Then check for True/False
+            if normalized == "true" or normalized.startswith("true"):
+                return "True"
+            if normalized == "false" or normalized.startswith("false"):
+                return "False"
+        return raw
 
     # For non-code tasks keep the final line to reduce extra narration.
     lines = [ln.strip() for ln in raw.split("\n") if ln.strip()]
     if not lines:
         return ""
-    return lines[-1]
+    final_line = lines[-1]
+    final_line = re.sub(r"^(answer|final answer|result)\s*[:\-]\s*", "", final_line, flags=re.IGNORECASE)
+    return final_line.strip()
 
 
 def valid_output(sample: NormalizedSample, text: str) -> bool:
@@ -217,6 +297,12 @@ def valid_output(sample: NormalizedSample, text: str) -> bool:
         return False
 
     normalized = text.strip()
+    
+    # Reject obvious code patterns for ALL non-code tasks FIRST
+    if sample.domain != "code":
+        if _looks_like_code(normalized):
+            return False
+    
     if sample.domain == "code":
         if len(normalized) > 8000:
             return False
@@ -231,6 +317,40 @@ def valid_output(sample: NormalizedSample, text: str) -> bool:
     # Non-code answers should stay concise and avoid giant irrelevant outputs.
     if len(normalized) > 1000:
         return False
+
+    # Reject output with code markers for non-code tasks
+    banned_prefixes = ("print(", "return ", "def ", "class ", "import ", "from ")
+    if normalized.lower().startswith(banned_prefixes):
+        return False
+    
+    # Also reject if any line contains code-like patterns
+    for line in normalized.split("\n"):
+        if not line.strip():
+            continue
+        line_lower = line.lower()
+        if any(marker in line_lower for marker in ("print(", "return ", "def ", "import ", "for ", "while ")):
+            return False
+    
+    # Logic domain must be EXACTLY True, False, or single letter (A-D)
+    if sample.domain == "logic":
+        norm_lower = normalized.lower().strip()
+        # Accept single letter or True/False
+        is_valid = (
+            (len(normalized.strip()) == 1 and normalized.strip().upper() in "ABCDEFGH") or
+            norm_lower in ("true", "false")
+        )
+        return is_valid
+    
+    # Math domain must be ONLY numeric
+    if sample.domain == "math":
+        if not re.match(r"^-?\d+(?:\.\d+)?$", normalized.strip()):
+            return False
+    
+    # Knowledge domain must be short text only (no code)
+    if sample.domain == "knowledge":
+        if len(normalized) > 500:
+            return False
+    
     return True
 
 
@@ -354,10 +474,10 @@ def run_inference(
             while True:
                 try:
                     raw_prediction = _call_with_timeout(model, prompt, timeout_seconds, max_tokens)
-                    if sample.domain == "code" and _is_empty_response(raw_prediction):
+                    if _is_empty_response(raw_prediction):
                         raise ValueError("empty-output")
                     prediction = clean_output(sample, raw_prediction)
-                    if sample.domain == "code" and _is_empty_response(prediction):
+                    if _is_empty_response(prediction):
                         raise ValueError("empty-output")
                     if not valid_output(sample, prediction):
                         raise ValueError("invalid-output-format")
@@ -380,6 +500,14 @@ def run_inference(
                         should_retry = any(marker in lower_error for marker in RETRIABLE_CODE_ERROR_MARKERS)
                         if "empty-output" in lower_error:
                             should_retry = True
+                    # Fix 1: sleep before retrying empty outputs to give the API a moment
+                    if "empty-output" in error_text.lower() or "empty-code" in error_text.lower():
+                        sleep_time = min(0.5 * attempt, 2.0)
+                        logger.warning(
+                            "Empty output on attempt %s/%s for %s – retrying in %.1fs",
+                            attempt, max_retry_for_sample, sample.id, sleep_time,
+                        )
+                        time.sleep(sleep_time)
                     if not should_retry:
                         prediction = ""
                         error = error_text

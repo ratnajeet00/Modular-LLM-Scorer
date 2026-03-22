@@ -9,6 +9,7 @@ description = "Deterministic, model-agnostic LLM benchmark library"
 requires-python = ">=3.10"
 dependencies = [
   "groq>=1.1.1",
+  "google-genai>=1.0.0",
   "requests>=2.31.0",
 ]
 

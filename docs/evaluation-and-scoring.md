@@ -9,11 +9,13 @@ Evaluator implementation: `benchmark_lib/engine/evaluator.py`
 - normalized text exact match first
 - numeric fallback by extracting numeric value
 - tolerant comparison via `math.isclose` (default tolerance `1e-3`)
+- strict prompt enforcement for final numeric answers only (no explanation)
 
 ### Logic
 
 - direct answer text normalization
 - supports option-letter predictions (A-E) when options exist
+- **robust boolean normalization**: handles True/False, T/F, Yes/No, and case iterations
 
 ### Knowledge
 
@@ -22,10 +24,12 @@ Evaluator implementation: `benchmark_lib/engine/evaluator.py`
 - alias acceptance from sample metadata (`aliases`)
 - short-span containment check for short factual answers
 - token-overlap F1 acceptance for paraphrase tolerance
+- prompt instructs short, exact phrases (max 10 words) excluding "I don't know"
 
 ### Code
 
 - extracts fenced Python block when present
+- automatically retries on `empty-code`, `test-failed`, `timeout`, and syntax errors
 - if tests exist, executes candidate code and tests via `exec(compile(...))` in a shared namespace
 - supports HumanEval-style `entry_point` binding to `candidate`
 - subprocess timeout for code execution

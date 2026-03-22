@@ -197,6 +197,12 @@ def main() -> None:
         hf_device=args.hf_device,
     )
 
+    if args.model == "gemini" and isinstance(model, GeminiModel):
+        ok, message = model.preflight_model_check()
+        print(message)
+        if not ok:
+            raise RuntimeError("Gemini preflight failed. Fix model/API access and retry.")
+
     seeds = _parse_seeds(args.seeds, args.seed)
     runs: list[dict] = []
     for seed in seeds:
