@@ -28,3 +28,6 @@ class EvalRecord:
     correct: bool
     error: str | None = None
     cost: float = 0.0
+    elapsed_seconds: float = 0.0
+    input_tokens: int = 0
+    output_tokens: int = 0

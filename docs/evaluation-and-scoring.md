@@ -58,6 +58,9 @@ Per sample:
 Features:
 
 - batch iteration
+- no timeout enforcement - models run to completion
+- timing tracking per sample (`elapsed_seconds`)
+- per-domain timing aggregates (mean/min/max/total seconds)
 - per-call timeout
 - retry loop
 - prompt-level cache

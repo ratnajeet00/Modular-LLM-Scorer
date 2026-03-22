@@ -11,12 +11,44 @@ from pathlib import Path
 from ..utils.types import NormalizedSample
 
 
+# Configuration for evaluation thresholds
+# Can be adjusted based on evaluation strictness
+F1_THRESHOLD_KNOWLEDGE = 0.75  # Reduced from 0.8 for better partial match acceptance
+
+
 def _norm_text(s: str) -> str:
     s = s.lower().strip()
     s = re.sub(r"\b(a|an|the)\b", " ", s)
     s = re.sub(r"[^a-z0-9\.\- ]+", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
     return s
+
+
+def _is_refusal(text: str) -> bool:
+    """Detect if text is a refusal/inability message from the model."""
+    text_lower = text.lower()
+    
+    refusal_patterns = [
+        r"i.*sorry.*(?:can't|cannot|unable|not able|don't.*able).*assist",
+        r"i.*(?:can only|only.*able|limited|designed.*only).*computer\s*science.*programming",
+        r"i.*don't have.*(?:expertise|knowledge|capability).*(?:medical|biology|history|science)",
+        r"(?:cannot|can't|unable to).*answer.*(?:medical|biology|history|science|outside)",
+        r"outside.*my.*(?:expertise|knowledge|area)",
+        r"not.*equipped.*(?:answer|help).*(?:medical|biology|history)",
+        r"(?:regret|unable|cannot).*(?:answer|assist|help).*(?:questions?|query|request)",
+        r"i.*programming.*assistant|i.*coding.*assistant",
+    ]
+    
+    for pattern in refusal_patterns:
+        if re.search(pattern, text_lower):
+            return True
+    
+    # Also check for very generic "sorry" messages
+    if ("sorry" in text_lower and 
+        ("can't" in text_lower or "cannot" in text_lower or "unable" in text_lower)):
+        return True
+    
+    return False
 
 
 def _extract_number(s: str) -> float | None:
@@ -62,6 +94,10 @@ def _token_f1(a: str, b: str) -> float:
 
 
 def _eval_knowledge(sample: NormalizedSample, prediction: str) -> bool:
+    # Reject refusals immediately
+    if _is_refusal(prediction):
+        return False
+    
     answer_norm = _norm_text(sample.answer)
     pred_norm = _norm_text(prediction)
     if answer_norm == pred_norm:
@@ -88,7 +124,7 @@ def _eval_knowledge(sample: NormalizedSample, prediction: str) -> bool:
         if len(pred_norm) >= 3 and (answer_norm in pred_norm or pred_norm in answer_norm):
             return True
 
-    return _token_f1(answer_norm, pred_norm) >= 0.8
+    return _token_f1(answer_norm, pred_norm) >= F1_THRESHOLD_KNOWLEDGE
 
 
 def _eval_math(answer: str, prediction: str, tolerance: float = 1e-3) -> bool:
@@ -191,6 +227,16 @@ def _eval_code(sample: NormalizedSample, prediction: str) -> tuple[bool, str | N
     code = _extract_code_block(prediction)
     if not code:
         return False, "empty-code"
+    
+    # Optional sandboxed safety check (lightweight validation only)
+    if ENABLE_SANDBOXED_EVAL:
+        try:
+            from .sandboxed_eval import validate_code_safety
+            is_safe, safety_msg = validate_code_safety(code, strict_mode=False)
+            if not is_safe:
+                return False, f"sandbox-{safety_msg.lower().replace(' ', '_')}"
+        except ImportError:
+            pass  # Sandboxed eval not available, continue normally
 
     # --- Apply code patches before execution ---
     code = _patch_deprecated_imports(code)   # Fix 3

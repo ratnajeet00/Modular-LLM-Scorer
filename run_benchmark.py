@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from datetime import datetime
 from statistics import mean, stdev
@@ -120,6 +121,214 @@ def _parse_seeds(seeds_arg: str | None, seed_fallback: int) -> list[int]:
     return [int(x) for x in items]
 
 
+def _compare_results(result1_path: str, result2_path: str) -> None:
+    """Compare two benchmark result JSONs and show diff table."""
+    try:
+        with open(result1_path, encoding="utf-8") as f:
+            r1 = json.load(f)
+        with open(result2_path, encoding="utf-8") as f:
+            r2 = json.load(f)
+    except Exception as e:
+        print(f"Error loading results: {e}", file=sys.stderr)
+        return
+    
+    print(f"\n{'='*80}")
+    print(f"Benchmark Comparison")
+    print(f"{'='*80}")
+    print(f"Model 1: {r1.get('model')} ({result1_path})")
+    print(f"Model 2: {r2.get('model')} ({result2_path})")
+    print()
+    
+    # Overall metrics
+    print(f"{'Metric':<30} {'Model 1':>15} {'Model 2':>15} {'Diff':>15}")
+    print("=" * 80)
+    
+    metrics = ["accuracy", "final_score", "failure_rate", "cost"]
+    for metric in metrics:
+        v1 = r1.get(metric, 0.0)
+        v2 = r2.get(metric, 0.0)
+        diff = v2 - v1
+        diff_str = f"{diff:+.6f}"
+        print(f"{metric:<30} {v1:>15.6f} {v2:>15.6f} {diff_str:>15}")
+    
+    # Per-domain breakdown
+    print(f"\n{'Per-Domain Accuracy':<30} {'Model 1':>15} {'Model 2':>15} {'Diff':>15}")
+    print("=" * 80)
+    
+    per_domain_1 = r1.get("per_domain", {})
+    per_domain_2 = r2.get("per_domain", {})
+    all_domains = set(per_domain_1.keys()) | set(per_domain_2.keys())
+    
+    for domain in sorted(all_domains):
+        v1 = per_domain_1.get(domain, 0.0)
+        v2 = per_domain_2.get(domain, 0.0)
+        diff = v2 - v1
+        diff_str = f"{diff:+.6f}"
+        print(f"{domain:<30} {v1:>15.6f} {v2:>15.6f} {diff_str:>15}")
+    
+    # Try to perform McNemar's test if JSONL logs are available
+    _try_mcnemar_test(result1_path, result2_path, r1, r2)
+
+
+def _try_mcnemar_test(json1_path: str, json2_path: str, r1: dict, r2: dict) -> None:
+    """Try to perform McNemar's test using raw JSONL logs if available."""
+    try:
+        from scipy.stats import chi2
+    except ImportError:
+        return  # scipy not available, skip
+    
+    # Try to locate JSONL files - they're typically in temp_eval or bech mark directories
+    json1_parent = Path(json1_path).parent
+    json2_parent = Path(json2_path).parent
+    
+    # Look for raw_outputs.jsonl or similar files
+    possible_dirs = [
+        json1_parent,
+        json1_parent.parent / "temp_eval",
+        Path("temp_eval"),
+        Path("bech mark"),
+    ]
+    
+    jsonl1 = None
+    jsonl2 = None
+    
+    # Try to match with filename patterns from result files
+    model1_name = r1.get("model", "model1")
+    model2_name = r2.get("model", "model2")
+    
+    for d in possible_dirs:
+        if not d.exists():
+            continue
+        # Look for files containing model names or dated output files
+        for f in d.glob("*raw_outputs*.jsonl"):
+            if jsonl1 is None and (model1_name.lower() in f.name.lower() or 
+                                  f.name.startswith("raw_outputs")):
+                jsonl1 = str(f)
+            elif jsonl2 is None and (model2_name.lower() in f.name.lower() or
+                                    f.name.startswith("raw_outputs")):
+                jsonl2 = str(f)
+            
+            if jsonl1 and jsonl2:
+                break
+    
+    if not jsonl1 or not jsonl2:
+        return  # Couldn't find JSONL files
+    
+    try:
+        # Extract predictions from JSONL
+        m1_preds = {}
+        m2_preds = {}
+        
+        with open(jsonl1) as f:
+            for line in f:
+                rec = json.loads(line)
+                m1_preds[rec.get("sample_id")] = rec.get("correct", False)
+        
+        with open(jsonl2) as f:
+            for line in f:
+                rec = json.loads(line)
+                m2_preds[rec.get("sample_id")] = rec.get("correct", False)
+        
+        # Find common samples
+        common = set(m1_preds.keys()) & set(m2_preds.keys())
+        if not common or len(common) < 10:
+            return  # Not enough common samples
+        
+        # Build contingency table for discordant pairs
+        m1_correct_m2_wrong = 0
+        m1_wrong_m2_correct = 0
+        
+        for sid in common:
+            m1_correct = m1_preds[sid]
+            m2_correct = m2_preds[sid]
+            
+            if m1_correct and not m2_correct:
+                m1_correct_m2_wrong += 1
+            elif not m1_correct and m2_correct:
+                m1_wrong_m2_correct += 1
+        
+        # Perform McNemar's test
+        b = m1_correct_m2_wrong
+        c = m1_wrong_m2_correct
+        total_disagreement = b + c
+        
+        if total_disagreement == 0:
+            stat = 0.0
+            p_value = 1.0
+        else:
+            stat = (b - c) ** 2 / total_disagreement
+            from scipy.stats import chi2
+            p_value = 1 - chi2.cdf(stat, df=1)
+        
+        print(f"\n{'='*80}")
+        print(f"Statistical Significance Test (McNemar's Test)")
+        print(f"{'='*80}")
+        print(f"Common samples evaluated: {len(common)}")
+        print(f"Samples where models disagree: {m1_correct_m2_wrong + m1_wrong_m2_correct}")
+        print(f"  Model 1 correct, Model 2 wrong: {m1_correct_m2_wrong}")
+        print(f"  Model 2 correct, Model 1 wrong: {m1_wrong_m2_correct}")
+        print(f"\nTest Statistic: {stat:.4f}")
+        print(f"P-value: {p_value:.6f}")
+        print(f"Significant at α=0.05: {'Yes' if p_value < 0.05 else 'No'}")
+        if p_value < 0.05:
+            print(f"→ The models have SIGNIFICANTLY different error rates (p={p_value:.4f})")
+        else:
+            print(f"→ No statistically significant difference in error rates (p={p_value:.4f})")
+        
+    except Exception:
+        pass  # Silently fail if JSONL analysis doesn't work
+
+
+def _dry_run(dataset_path: str, mode: str, seed: int) -> None:
+    """Show sample selection without calling model."""
+    from benchmark_lib import Benchmark
+    from benchmark_lib.engine.sampler import stratified_sample
+    
+    try:
+        benchmark = Benchmark(dataset_path=dataset_path, seed=seed)
+        selected = stratified_sample(benchmark.samples, mode=mode, seed=seed)
+        
+        print(f"\n{'='*80}")
+        print(f"Dry Run: Sample Selection")
+        print(f"{'='*80}")
+        print(f"Mode: {mode}")
+        print(f"Seed: {seed}")
+        print(f"Total samples selected: {len(selected)}")
+        print()
+        
+        # Group by domain and difficulty
+        from collections import defaultdict
+        by_domain_diff = defaultdict(lambda: defaultdict(int))
+        by_dataset = defaultdict(int)
+        
+        for s in selected:
+            by_domain_diff[s.domain][s.difficulty] += 1
+            by_dataset[s.dataset] += 1
+        
+        print("Samples by Domain and Difficulty:")
+        print(f"{'Domain':<15} {'Easy':>8} {'Medium':>8} {'Hard':>8} {'Total':>8}")
+        print("-" * 50)
+        
+        for domain in ["math", "logic", "knowledge", "code"]:
+            easy = by_domain_diff[domain]["easy"]
+            med = by_domain_diff[domain]["medium"]
+            hard = by_domain_diff[domain]["hard"]
+            total = easy + med + hard
+            if total > 0:
+                print(f"{domain:<15} {easy:>8} {med:>8} {hard:>8} {total:>8}")
+        
+        print(f"\nDatasets used: {len(by_dataset)}")
+        for dataset, count in sorted(by_dataset.items()):
+            print(f"  {dataset}: {count} samples")
+        
+        print(f"\n✓ Dry run complete. No API calls made.")
+    except Exception as e:
+        print(f"Error during dry run: {e}", file=sys.stderr)
+
+
+
+
+
 def _mean_std(values: list[float]) -> dict[str, float]:
     if not values:
         return {"mean": 0.0, "std": 0.0}
@@ -176,14 +385,28 @@ def main() -> None:
     parser.add_argument("--seeds", default=None, help="Comma-separated seeds for multi-seed runs, e.g. 42,43,44")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--max-workers", type=int, default=None, help="Max concurrent model requests")
-    parser.add_argument("--timeout-seconds", type=float, default=30.0)
+    parser.add_argument("--timeout-seconds", type=float, default=30.0, help="(DISABLED - models run without time limits)")
     parser.add_argument("--retries", type=int, default=2)
     parser.add_argument(
         "--raw-output-log",
         default="temp_eval/raw_outputs.jsonl",
         help="JSONL path for per-sample raw outputs (question, prediction, error)",
     )
+    # New CLI flags
+    parser.add_argument("--compare", nargs=2, metavar=("RESULT1", "RESULT2"), 
+                        help="Compare two benchmark result JSONs and show diff table")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Show sample selection without calling model")
     args = parser.parse_args()
+
+    # Handle special CLI modes
+    if args.compare:
+        _compare_results(args.compare[0], args.compare[1])
+        return
+    
+    if args.dry_run:
+        _dry_run(args.dataset_path, args.mode, args.seed)
+        return
 
     _load_env_file(args.env_file)
 

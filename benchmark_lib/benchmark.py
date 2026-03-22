@@ -75,6 +75,8 @@ class Benchmark:
             diff_counts.get("hard", 0),
         )
 
+        import time as time_module
+        inference_start = time_module.monotonic()
         records = run_inference(
             model=model,
             samples=selected,
@@ -85,6 +87,7 @@ class Benchmark:
             max_workers=max_workers,
             raw_output_log_path=raw_output_log_path,
         )
+        inference_elapsed = time_module.monotonic() - inference_start
 
         non_empty_predictions = sum(1 for r in records if r.prediction.strip())
         call_error_records = [r for r in records if r.error and not r.prediction.strip()]
@@ -105,4 +108,4 @@ class Benchmark:
                 (100.0 * call_error_count / max(1, len(records))),
             )
 
-        return score(records, model_name=model.model_name, mode=mode)
+        return score(records, model_name=model.model_name, mode=mode, selected_datasets_by_domain=per_domain_ds)

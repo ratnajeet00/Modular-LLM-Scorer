@@ -1,0 +1,74 @@
+{
+  "model": "local:llama3.1:8b",
+  "mode": "quick",
+  "accuracy": 0.19,
+  "per_dataset": {
+    "gsm8k_main": 0.153846,
+    "gsm8k_socratic": 0.0,
+    "mbpp_full": 0.307692,
+    "mbpp_sanitized": 0.5,
+    "natural_questions": 0.076923,
+    "proofwriter": 0.153846,
+    "reclor": 0.25,
+    "squad": 0.083333
+  },
+  "per_domain": {
+    "code": 0.4,
+    "knowledge": 0.08,
+    "logic": 0.2,
+    "math": 0.08
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 33.601,
+      "min_seconds": 5.088,
+      "max_seconds": 107.536,
+      "total_seconds": 840.036,
+      "sample_count": 25
+    },
+    "knowledge": {
+      "mean_seconds": 7.451,
+      "min_seconds": 1.125,
+      "max_seconds": 27.933,
+      "total_seconds": 186.275,
+      "sample_count": 25
+    },
+    "logic": {
+      "mean_seconds": 5.164,
+      "min_seconds": 0.472,
+      "max_seconds": 16.002,
+      "total_seconds": 129.112,
+      "sample_count": 25
+    },
+    "math": {
+      "mean_seconds": 7.806,
+      "min_seconds": 0.691,
+      "max_seconds": 30.629,
+      "total_seconds": 195.153,
+      "sample_count": 25
+    }
+  },
+  "final_score": 0.158,
+  "total_questions": 100,
+  "correct_count": 19,
+  "wrong_count": 81,
+  "error_rate": 0.81,
+  "failure_rate": 0.15,
+  "non_empty_predictions": 85,
+  "empty_predictions": 15,
+  "call_error_count": 15,
+  "call_error_examples": [
+    "execution-error:test-failed",
+    "execution-error:name 'calendar' is not defined",
+    "execution-error:invalid literal for int() with base 10: '('"
+  ],
+  "error_count": 16,
+  "error_examples": [
+    "execution-error:test-failed",
+    "execution-error:name 'calendar' is not defined",
+    "execution-error:invalid literal for int() with base 10: '('",
+    "invalid-output-format"
+  ],
+  "cost": 0.0,
+  "seed": 42
+}

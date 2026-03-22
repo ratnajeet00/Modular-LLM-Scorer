@@ -7,16 +7,17 @@ from ..utils.types import NormalizedSample
 
 # Shared instruction block used across domains/datasets.
 BASE_INSTRUCTION = (
-    "You are solving a problem from a benchmark dataset.\n\n"
-    "Rules:\n"
-    "- Give ONLY the final answer.\n"
-    "- For math/logic/knowledge tasks: do NOT write code.\n"
-    "- Do NOT use print(...), return ..., or markdown code fences for non-code tasks.\n"
-    "- For coding questions: return ONE complete runnable Python function only.\n"
-    "- Do NOT omit function definitions.\n"
-    "- Do NOT give explanation unless asked.\n"
-    "- Ensure variables and functions are defined.\n"
-    "- Output must match task format exactly."
+    "You are a helpful AI assistant with expertise in all domains.\n"
+    "Answer ALL types of questions: math, science, logic, code, general knowledge.\n"
+    "NEVER refuse or say 'I cannot help' or 'I don't have expertise'.\n"
+    "NEVER say you only support one topic or refuse out-of-domain questions.\n"
+    "NEVER say 'as an AI assistant' or similar caveats.\n"
+    "ALWAYS provide a direct, concise answer.\n"
+    "Answer even difficult questions - do your best.\n\n"
+    "Output format rules:\n"
+    "- For math/logic/knowledge: give ONLY the final answer, no explanation.\n"
+    "- For code: return complete executable Python code.\n"
+    "- ALWAYS respond with content. NEVER leave output empty."
 )
 
 # Domain defaults.
@@ -32,38 +33,39 @@ PROMPT_TEMPLATES = {
         "Format: Just the letter (e.g., A). WRONG: 'The answer is A', 'Option A'"
     ),
     "knowledge": (
-        "Give a short exact answer.\n"
-        "If numeric -> return ONLY number.\n"
-        "Do NOT say \"I don't know\"."
+        "Answer the question directly in one short sentence.\n"
+        "ALWAYS answer. DO NOT refuse. DO NOT say 'I don't know' or 'I cannot help'.\n"
+        "Even if uncertain, provide your best answer."
     ),
     "code": (
-        "Write a COMPLETE Python function.\n"
-        "\n"
-        "Rules:\n"
-        "- Write ONLY the function with EXACT name and parameters as given.\n"
-        "- Do NOT change the function signature in any way.\n"
-        "- Do NOT rename, add, or remove arguments.\n"
-        "- Use correct input types (list, tuple, int).\n"
-        "- Do NOT assume fixed length.\n"
-        "- Handle edge cases (empty list, small input).\n"
-        "- Do NOT use print().\n"
-        "- Return only function."
+        "Return complete, executable Python code that runs without errors.\n"
+        "Include ALL necessary imports at the top.\n"
+        "Return the ENTIRE solution - not just a function definition.\n"
+        "Format: [imports on lines 1-N][code definition][function call if needed].\n"
+        "Use proper Python syntax. Test in your head first.\n"
+        "Do NOT explain. Output ONLY code. No text before/after."
     ),
 }
 
 # Dataset-specific prompt overrides.
 DATASET_PROMPT_OVERRIDES = {
     "mbpp_full": (
-        "Write ONLY the function with the EXACT name and parameters as given.\n"
+        "Return the COMPLETE, RUNNABLE Python code that will be tested.\n"
+        "Include the function with EXACT name and parameters as given.\n"
+        "Include ALL necessary imports (e.g., import re, import math, etc).\n"
+        "Include the ENTIRE code block ready to execute.\n"
         "Do NOT change the function signature.\n"
-        "Do NOT rename, add, or remove arguments.\n"
-        "Return ONLY the function code. No explanation."
+        "Do NOT add explanations or comments.\n"
+        "Only return executable Python code."
     ),
     "mbpp_sanitized": (
-        "Write ONLY the function with the EXACT name and parameters as given.\n"
+        "Return the COMPLETE, RUNNABLE Python code that will be tested.\n"
+        "Include the function with EXACT name and parameters as given.\n"
+        "Include ALL necessary imports (e.g., import re, import math, etc).\n"
+        "Include the ENTIRE code block ready to execute.\n"
         "Do NOT change the function signature.\n"
-        "Do NOT rename, add, or remove arguments.\n"
-        "Return ONLY the function code. No explanation."
+        "Do NOT add explanations or comments.\n"
+        "Only return executable Python code."
     ),
     "gsm8k_main": "Solve step-by-step internally, but return ONLY the final numeric answer.",
     "gsm8k_socratic": "Solve step-by-step internally, but return ONLY the final numeric answer.",
@@ -81,7 +83,7 @@ MAX_TOKENS_BY_DOMAIN = {
     "math": 512,
     "logic": 512,
     "knowledge": 512,
-    "code": 1024,
+    "code": 2048,  # Increased for DeepSeek and other local models
 }
 
 
@@ -152,13 +154,13 @@ def build_prompt(sample: NormalizedSample) -> str:
             prompt = (
                 f"{prompt}\n\n"
                 f"Use EXACT function name: {entry_point.strip()}\n"
-                f"Return ONLY the function.\n"
-                f"Do NOT use print(). Return values only.\n"
+                f"Return COMPLETE, RUNNABLE Python code that will be executed.\n"
+                f"Include ALL necessary imports.\n"
+                f"Include the ENTIRE code block (not just the function).\n"
                 f"Use EXACT function signature from problem.\n"
                 f"Do NOT change number of arguments.\n"
-                f"Function must accept the correct number of arguments.\n"
-                f"Follow problem input format exactly; do not assume extra parameters.\n"
-                f"Ensure correct data types; avoid tuple/int and list/power type mistakes."
+                f"Do NOT use print(). Return values only.\n"
+                f"Only return executable Python code. NO explanations."
             )
             prompt = f"{prompt}{_build_example_input_hint(sample)}"
     

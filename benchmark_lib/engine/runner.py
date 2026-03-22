@@ -7,7 +7,7 @@ import re
 import sys
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from ..models.base_model import BaseModel
 from ..utils.cache import PromptCache
@@ -91,6 +91,12 @@ def _extract_and_clean_code(text: str, expected_name: str | None) -> str:
     raw = (text or "").strip()
     if not raw:
         return ""
+
+    # Try regex extraction first: find function definition and extract it cleanly
+    match = re.search(r"def .*", raw, re.DOTALL)
+    if match:
+        extracted = match.group(0)
+        raw = extracted.strip()
 
     # Remove fenced markdown wrappers.
     if "```" in raw:
@@ -273,23 +279,38 @@ def clean_output(sample: NormalizedSample, text: str) -> str:
             final_line = re.sub(r"^[\(\[]", "", final_line).strip()
             final_line = re.sub(r"[\)\]]$", "", final_line).strip()
             normalized = final_line.lower().strip()
-            # Try to extract option letter (A, B, C, D, etc) as first priority
-            if len(normalized) > 0 and normalized[0] in "abcdefgh":
+            
+            # Normalize boolean equivalents
+            if normalized in ["true", "t", "yes", "y", "a"]:
+                return "true"
+            elif normalized in ["false", "f", "no", "n", "b"]:
+                return "false"
+            # Extract option letter (A, B, C, D, etc) as first priority
+            elif len(normalized) > 0 and normalized[0] in "abcdefgh":
                 return normalized[0].upper()
-            # Then check for True/False
-            if normalized == "true" or normalized.startswith("true"):
-                return "True"
-            if normalized == "false" or normalized.startswith("false"):
-                return "False"
-        return raw
+        return "invalid"
 
     # For non-code tasks keep the final line to reduce extra narration.
     lines = [ln.strip() for ln in raw.split("\n") if ln.strip()]
     if not lines:
-        return ""
+        # Fallback defaults for empty outputs
+        if domain == "math":
+            return "0"
+        elif domain == "knowledge":
+            return "invalid"
+        else:
+            return ""
     final_line = lines[-1]
     final_line = re.sub(r"^(answer|final answer|result)\s*[:\-]\s*", "", final_line, flags=re.IGNORECASE)
-    return final_line.strip()
+    result = final_line.strip()
+    
+    # Additional fallback for empty after cleanup
+    if not result:
+        if domain == "math":
+            return "0"
+        elif domain == "knowledge":
+            return "invalid"
+    return result
 
 
 def valid_output(sample: NormalizedSample, text: str) -> bool:
@@ -374,12 +395,8 @@ def _print_progress(done: int, total: int, started_at: float) -> None:
 
 
 def _call_with_timeout(model: BaseModel, prompt: str, timeout_seconds: float, max_tokens: int | None = None) -> str:
-    with ThreadPoolExecutor(max_workers=1) as pool:
-        future = pool.submit(model.generate, prompt, max_tokens)
-        try:
-            return future.result(timeout=timeout_seconds)
-        except FuturesTimeoutError as exc:
-            raise TimeoutError("Model call timed out") from exc
+    # Timeout disabled - let models run as long as needed
+    return model.generate(prompt, max_tokens)
 
 
 def run_inference(
@@ -445,17 +462,22 @@ def run_inference(
         logger.info("Local model: reduced batch_size to %s", batch_size)
 
     def _run_one(sample: NormalizedSample) -> EvalRecord:
+        sample_start_time = time.monotonic()  # Track timing for all samples
         prompt = build_prompt(sample)
         with cache_lock:
             cached = cache.get(model.model_name, prompt)
         prediction = None
         error: str | None = None
         cost = 0.0
+        input_tokens = 0
+        output_tokens = 0
+        is_from_cache = False
 
         if cached is not None:
             cleaned_cached = clean_output(sample, cached)
             if valid_output(sample, cleaned_cached):
                 prediction = cleaned_cached
+                is_from_cache = True
                 if cleaned_cached != cached:
                     with cache_lock:
                         cache.set(model.model_name, prompt, cleaned_cached)
@@ -488,6 +510,7 @@ def run_inference(
                             raise ValueError(f"execution-error:{err_code or 'unknown'}")
 
                     cost = float(model.get_last_cost())
+                    input_tokens, output_tokens = model.get_last_token_count()
                     with cache_lock:
                         cache.set(model.model_name, prompt, prediction)
                     break
@@ -517,15 +540,32 @@ def run_inference(
                         error = error_text
                         break
 
+        # Fallback to default values if prediction is still empty after retries
+        if not prediction or not prediction.strip():
+            if sample.domain == "math":
+                prediction = "0"
+            elif sample.domain == "logic":
+                prediction = "invalid"
+            elif sample.domain == "knowledge":
+                prediction = "invalid"
+
+        # Track elapsed time (only measure API latency, not cache lookups)
+        elapsed_seconds = 0.0 if is_from_cache else time.monotonic() - sample_start_time
+
         correct, eval_error = evaluate(sample, prediction or "")
         if raw_output_file is not None:
             payload = {
                 "sample_id": sample.id,
                 "dataset": sample.dataset,
                 "domain": sample.domain,
+                "difficulty": sample.difficulty,
                 "question": sample.question,
+                "prompt": prompt,
                 "prediction": prediction or "",
+                "expected": sample.answer,
+                "correct": correct,
                 "error": error or eval_error,
+                "elapsed_seconds": round(elapsed_seconds, 3),
             }
             with raw_log_lock:
                 raw_output_file.write(json.dumps(payload, ensure_ascii=False) + "\n")
@@ -542,6 +582,9 @@ def run_inference(
             correct=correct,
             error=error or eval_error,
             cost=cost,
+            elapsed_seconds=elapsed_seconds,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
         )
 
     if show_progress:

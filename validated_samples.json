@@ -1,0 +1,725 @@
+{
+  "file": "temp_eval\\deep seek raw_outputs.jsonl",
+  "total_samples": 100,
+  "samples": [
+    {
+      "sample_id": "gsm8k_socratic-2522",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "A large puzzle costs $15. A small puzzle and a large puzzle together cost $23. How much would you pay for 1 large and 3 small puzzles?"
+    },
+    {
+      "sample_id": "gsm8k_socratic-4891",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Mr. Sean has a veterinary clinic where he charges clients $60 to treat a dog and $40 to care for a cat. If Khalil took 20 dogs and 60 cats to the clinic for treatment, how much money did he pay Mr. Sean?"
+    },
+    {
+      "sample_id": "nq-2075",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "when was the last time china had the olympics"
+    },
+    {
+      "sample_id": "nq-354",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "role of spores in the development of c. difficile disease"
+    },
+    {
+      "sample_id": "nq-5070",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "what types of animals are in the temperate forest"
+    },
+    {
+      "sample_id": "gsm8k_socratic-4596",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Paul, a biology teacher, assigns 265 points in the first quarter.  There are 4 times as many test points as quiz points, and 5 more quiz points than homework points.  How many homework points are there in the first quarter?"
+    },
+    {
+      "sample_id": "RelNeg-OWA-D0-3649",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The bear is kind."
+    },
+    {
+      "sample_id": "56cec79caab44d1400b88a35",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "How many militia reservists joined in on rescue efforts?"
+    },
+    {
+      "sample_id": "gsm8k_socratic-4889",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Peter has 15 birds. 1/3 are ducks. The rest are chickens and require special feed that costs $2 per bird. How much does it cost to feed the chickens?"
+    },
+    {
+      "sample_id": "RelNoneg-OWA-D0-3921",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The bald eagle does not see the bear."
+    },
+    {
+      "sample_id": "791",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to remove the nested record from the given tuple."
+    },
+    {
+      "sample_id": "289",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a python function to calculate the number of odd days in a given year."
+    },
+    {
+      "sample_id": "gsm8k_main-5205",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "A marathon is 26 miles.  He can run the first 10 miles in 1 hour.  For the remaining miles he runs at 80% that pace.  How long does the race take?"
+    },
+    {
+      "sample_id": "56ccea7f62d2951400fa64e3",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "What year did Wang and Nyima believe that the Mongol Prince Punala went to Nanjing?"
+    },
+    {
+      "sample_id": "nq-2995",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "who wrote the song that's the way i like it by kc and the sunshine band"
+    },
+    {
+      "sample_id": "632",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a python function to move all zeroes to the end of the given list."
+    },
+    {
+      "sample_id": "656",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a python function to find the minimum sum of absolute differences of two arrays."
+    },
+    {
+      "sample_id": "val_166",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The assertion that insects do not literally breathe plays which one of the following roles in the essayist's argument?"
+    },
+    {
+      "sample_id": "56d2786c59d6e41400146025",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "When was the first documented translation efforts by foreign Buddhist monks in China?"
+    },
+    {
+      "sample_id": "56d118ce17492d1400aab927",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "What control can be used while targeting that allows the player to forego manual targeting?"
+    },
+    {
+      "sample_id": "89",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to find the closest smaller number than n."
+    },
+    {
+      "sample_id": "418",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a python function to find the element of a list having maximum length."
+    },
+    {
+      "sample_id": "train_3697",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The proposal about how the government's budget should be redirected plays which one of the following roles in the argument?"
+    },
+    {
+      "sample_id": "gsm8k_socratic-2269",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Mr. McNeely takes a register of the total number of students present in class every day. On a particular week, the number of students in the class on the second day was 40 more than the first day. The number of students who didn't turn up for the class on the second day was twice the number of students who didn't turn up on the third day. On the third day, 1/7 of the total number of students of the class called in sick. If the total number of students in the class is 280, calculate the number of absent students in the three days."
+    },
+    {
+      "sample_id": "gsm8k_socratic-4200",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Alexis has four times as many mangoes as Dilan and Ashley combined. If Alexis has 60 mangoes, how many mangoes does all of them have combined?"
+    },
+    {
+      "sample_id": "56d0ac6c234ae51400d9c414",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "What is the goal of the Buddhist path?"
+    },
+    {
+      "sample_id": "gsm8k_main-2996",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Dream's car consumes 4 gallons of gas per mile. If she drives 400 miles today and 200 more miles tomorrow than today, how many gallons of gas will the car consume?"
+    },
+    {
+      "sample_id": "train_4428",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Which one of the following, if true, most strengthens the argument?"
+    },
+    {
+      "sample_id": "399",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to perform the mathematical bitwise xor operation across the given tuples."
+    },
+    {
+      "sample_id": "train_1335",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The reasoning is questionable because it ignores the possibility that"
+    },
+    {
+      "sample_id": "56cc12376d243a140015ee96",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "What has current day research suggested that Chopin was suffering from alongside his other illnesses?"
+    },
+    {
+      "sample_id": "gsm8k_socratic-1214",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Adlai has 2 dogs and 1 chicken. How many animal legs are there in all?"
+    },
+    {
+      "sample_id": "AttNoneg-OWA-D0-3407",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Charlie is young."
+    },
+    {
+      "sample_id": "nq-4829",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "who played moby in how i met your mother"
+    },
+    {
+      "sample_id": "train_1548",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Which of the following hypotheses best accounts for the findings of the experiment?"
+    },
+    {
+      "sample_id": "129",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to calculate magic square."
+    },
+    {
+      "sample_id": "RelNoneg-OWA-D0-5872",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The lion does not visit the dog."
+    },
+    {
+      "sample_id": "gsm8k_main-5226",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "A party venue has 4 tables that seat 6 people each, 16 tables that seat 4 people each, and 8 round tables that seat 10 people each. What is the total capacity of all the tables at the party venue?"
+    },
+    {
+      "sample_id": "AttNoneg-OWA-D0-623",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Fiona is round."
+    },
+    {
+      "sample_id": "gsm8k_main-4625",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Alma is taking a walk and comes across four goats standing behind a fence. Alma has a bag of baby carrots she brought to have for a snack and decides to feed the goats with them. Alma wants to make sure all the goats get the same amount of carrots, so she starts counting them out. She has 47 baby carrots. If she wants to give the exact same amount of carrots to each goat and wants to feed them all the carrots she can, how many will she have left over?"
+    },
+    {
+      "sample_id": "gsm8k_main-4523",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "An alien invades Earth.  It abducts 200 people.  He returns 80% of the people abducted.  After that he takes 10 people to another planet.  He took the rest to his home planet.  How many people did he take to his home planet?"
+    },
+    {
+      "sample_id": "307",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to get a colon of a tuple."
+    },
+    {
+      "sample_id": "train_4234",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "If the claims made above are true, then which one of the following must be true?"
+    },
+    {
+      "sample_id": "nq-4396",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "who plays amys brother on everybody loves raymond"
+    },
+    {
+      "sample_id": "RelNoneg-OWA-D0-1826",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The lion eats the squirrel."
+    },
+    {
+      "sample_id": "gsm8k_main-1957",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "John buys 500 newspapers.  Each newspaper sells for $2.  He sells 80% of them.  He buys them all for 75% less than the price at which he sells them.  How much profit does he make?"
+    },
+    {
+      "sample_id": "916",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to find if there is a triplet in the array whose sum is equal to a given value."
+    },
+    {
+      "sample_id": "train_3036",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Which one of the following responses by Claude would, if true, most strongly counter Lorraine's objection?"
+    },
+    {
+      "sample_id": "gsm8k_socratic-2333",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Milo is making a giant loaf of bread, and the recipe calls for pounds of eggs instead of telling him the number. He needs 6 pounds in total. He looks up online that an egg weighs 1/16 of a pound. If he needs 6 pounds of eggs, how many dozen should he buy?"
+    },
+    {
+      "sample_id": "gsm8k_main-5678",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "A particular train has some passenger cars and a number of cargo cars equal to half the number of passenger cars plus three. If the total number of cars is 71, counting the engine and caboose, how many passenger cars are in the train?"
+    },
+    {
+      "sample_id": "RelNoneg-OWA-D0-5779",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The rabbit eats the rabbit."
+    },
+    {
+      "sample_id": "785",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to convert tuple string to integer tuple."
+    },
+    {
+      "sample_id": "605",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to check if the given integer is a prime number."
+    },
+    {
+      "sample_id": "193",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to remove the duplicates from the given tuple."
+    },
+    {
+      "sample_id": "56bec8a13aeaaa14008c9440",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "Which professor from Northeastern University wrote about how race correlates with these criticisms of Beyonce?"
+    },
+    {
+      "sample_id": "56ce61a4aab44d1400b88718",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "Horace de Saussure built the first box cooker in what year?"
+    },
+    {
+      "sample_id": "nq-1117",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "who won season 8 america's next top model"
+    },
+    {
+      "sample_id": "292",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a python function to find quotient of two numbers (rounded down to the nearest integer)."
+    },
+    {
+      "sample_id": "train_3610",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The argument's reasoning is most vulnerable to criticism on the grounds that the argument fails to take into account the possibility that"
+    },
+    {
+      "sample_id": "368",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to repeat the given tuple n times."
+    },
+    {
+      "sample_id": "AttNeg-OWA-D0-1326",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Charlie is not young."
+    },
+    {
+      "sample_id": "gsm8k_main-3163",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "The teacher agrees to order pizza for the class. For every student in the class, she will buy 2 pieces of cheese and 1 piece of onion and they will eat exactly that amount. A large pizza has 18 slices. She orders 6 total pizzas and there are 8 pieces of cheese and 4 pieces of onion leftover. How many students are in the class?"
+    },
+    {
+      "sample_id": "56cf86a3234ae51400d9be00",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "What famous English artist was Kanye compared to by The Guardian?"
+    },
+    {
+      "sample_id": "train_2745",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Which one of the following, if true, most seriously weakens the argument?"
+    },
+    {
+      "sample_id": "gsm8k_main-157",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "A young girl pours 23 blue beads and 16 yellow beads into a bowl. She divides the total into 3 equal parts, removes some beads from each part, and doubles the rest to have 6 beads in each part now. How many beads were removed from each part?"
+    },
+    {
+      "sample_id": "train_2054",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The economist's statements, if true, most strongly support which one of the following?"
+    },
+    {
+      "sample_id": "gsm8k_main-5217",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Grant scored 10 points higher on his math test than John.  John received twice as many points as Hunter who scored a 45 on his math test.  What was Grant's test score?"
+    },
+    {
+      "sample_id": "gsm8k_socratic-3865",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Faye had $20. Today, her mother gave her twice as much as her money. If she bought ten cupcakes at $1.50 each and five boxes of cookies at $3 per box, how much money did she have left?"
+    },
+    {
+      "sample_id": "571",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to find maximum possible sum of disjoint pairs for the given array of integers and a number k."
+    },
+    {
+      "sample_id": "7",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to find all words which are at least 4 characters long in a string."
+    },
+    {
+      "sample_id": "765",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to find nth polite number. geeksforgeeks.org/n-th-polite-number/"
+    },
+    {
+      "sample_id": "942",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to check if any list element is present in the given list."
+    },
+    {
+      "sample_id": "56d2a28059d6e41400146170",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "Buddism has what kind of parallels withother systems of thought?"
+    },
+    {
+      "sample_id": "RelNeg-OWA-D0-3220",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "The rabbit visits the rabbit."
+    },
+    {
+      "sample_id": "AttNoneg-OWA-D0-7184",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Gary is not green."
+    },
+    {
+      "sample_id": "nq-4680",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "when did the ancient period start and end"
+    },
+    {
+      "sample_id": "gsm8k_socratic-4216",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "In the Golden State Team, each player earned points. Draymond earned 12 points, Curry earned twice the points as Draymond, Kelly earned 9, Durant earned twice the points as Kelly, Klay earned half the points as Draymond. How many points did the Golden States have in total?"
+    },
+    {
+      "sample_id": "780",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to find the combinations of sums with tuples in the given tuple list."
+    },
+    {
+      "sample_id": "nq-2331",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "which state did great britain take control of from spain at the end of the french and indian war"
+    },
+    {
+      "sample_id": "gsm8k_socratic-2866",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Erin is watching a TV mini series of Pride and Prejudice. There are 6 episodes that are each 50 minutes long. If Erin watches all of the episodes in one sitting, one after the other with no breaks, how many hours will she spend watching the series?"
+    },
+    {
+      "sample_id": "56d4e5022ccc5a1400d832fc",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "In what year was the slang term from a title of a Destiny's Child song that is also used to describe Beyoncé put in the dictionary?"
+    },
+    {
+      "sample_id": "56cfed0f234ae51400d9c0db",
+      "dataset": "squad",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "Whose piano method did Chopin teach his students?"
+    },
+    {
+      "sample_id": "nq-2180",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "how does congress check & provide oversight of the executive branch"
+    },
+    {
+      "sample_id": "462",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to find all possible combinations of the elements of a given list."
+    },
+    {
+      "sample_id": "AttNoneg-OWA-D0-6262",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Harry is not blue."
+    },
+    {
+      "sample_id": "gsm8k_main-2159",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Marla has to spend 20 minutes driving one way to her son's school, then 70 minutes attending parent-teacher night, then the same amount of time driving home. How many minutes does Marla spend on this errand in total?"
+    },
+    {
+      "sample_id": "gsm8k_socratic-1326",
+      "dataset": "gsm8k_socratic",
+      "domain": "math",
+      "difficulty": null,
+      "question": "Gargamel needed new tires for his truck. He went to the auto shop and bought 4 tires on sale for $75 each. The salesman told him that he saved a total of $36. If Gargamel saved the same amount on each tire, what was the original price of each tire?"
+    },
+    {
+      "sample_id": "AttNeg-OWA-D0-4930",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Bob is young."
+    },
+    {
+      "sample_id": "nq-2020",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "where is the basic input/output system (bios) stored"
+    },
+    {
+      "sample_id": "411",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to convert the given snake case string to camel case string."
+    },
+    {
+      "sample_id": "nq-386",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "when does real time with bill maher come back"
+    },
+    {
+      "sample_id": "gsm8k_main-1576",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "When Pogo, the four-legged martian, walks across the soft Martian soil, it leaves 4 footprints every meter.  But Grimzi, the three-legged Plutonian, leaves only 3 footprints in the soft sands of Pluto for every 6 meters it walks.  If Pogo travels 6000 meters across the soil of Mars, and Grimzi travels for 6000 meters across the fine sands of Pluto, what is the combined total number of footprints the two creatures will leave on the surfaces of their respective planets?"
+    },
+    {
+      "sample_id": "gsm8k_main-5645",
+      "dataset": "gsm8k_main",
+      "domain": "math",
+      "difficulty": null,
+      "question": "If 12 bags of oranges weigh 24 pounds, how much do 8 bags weigh?"
+    },
+    {
+      "sample_id": "train_1588",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Which one of the following is most strongly supported if all of the statements above are true?"
+    },
+    {
+      "sample_id": "778",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to pack consecutive duplicates of a given list elements into sublists."
+    },
+    {
+      "sample_id": "train_1249",
+      "dataset": "reclor",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Which one of the following, if true, most seriously undermines the conclusion drawn in the argument above?"
+    },
+    {
+      "sample_id": "AttNoneg-OWA-D0-3637",
+      "dataset": "proofwriter",
+      "domain": "logic",
+      "difficulty": null,
+      "question": "Fiona is not kind."
+    },
+    {
+      "sample_id": "nq-886",
+      "dataset": "natural_questions",
+      "domain": "knowledge",
+      "difficulty": null,
+      "question": "who is credited with the first list of all 27 of the current list of canonical new testament texts"
+    },
+    {
+      "sample_id": "647",
+      "dataset": "mbpp_full",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function to split a string at uppercase letters."
+    },
+    {
+      "sample_id": "229",
+      "dataset": "mbpp_sanitized",
+      "domain": "code",
+      "difficulty": null,
+      "question": "Write a function that takes in an array and an integer n, and re-arranges the first n elements of the given array so that all negative elements appear before positive ones, and where the relative order among negative and positive elements is preserved."
+    }
+  ],
+  "summary": {
+    "by_domain": {
+      "math": 25,
+      "knowledge": 25,
+      "logic": 25,
+      "code": 25
+    },
+    "by_dataset": {
+      "gsm8k_socratic": 12,
+      "natural_questions": 13,
+      "proofwriter": 13,
+      "squad": 12,
+      "mbpp_full": 13,
+      "gsm8k_main": 13,
+      "mbpp_sanitized": 12,
+      "reclor": 12
+    },
+    "by_difficulty": {}
+  }
+}

@@ -34,7 +34,7 @@ File: `benchmark_lib/models/local_model.py`
 - default URL: `http://localhost:11434/v1`
 - falls back to `/api/chat` when OpenAI route is unavailable
 - **automatic optimizations**:
-  - increases timeout to 120s
+  - no timeout enforcement - models run to completion
   - increases retries to 3
   - caps batch size at 4 for stability
 
@@ -82,9 +82,9 @@ Entrypoint: `run_benchmark.py`
 - `--seed` / `--seeds`
 - `--batch-size`
 - `--max-workers`
-- `--timeout-seconds`
+- `--timeout-seconds` (DISABLED - models run without time limits, argument accepted for backward compatibility)
 - `--retries`
-- `--raw-output-log`
+- `--raw-output-log` (outputs include `elapsed_seconds` per sample)
 - `--env-file`
 - local/HF specific args (`--local-base-url`, `--local-api-key`, `--hf-api-token`, `--hf-use-inference-api`, `--hf-device`)
 
@@ -144,6 +144,40 @@ python run_benchmark.py --model together --model-name mistralai/Mistral-7B-Instr
 python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1
 python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1 --batch-size 2
 python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1 --raw-output-log temp_eval/groq_quick.jsonl
+```
+
+## Timing metrics
+
+All benchmark runs include timing data collected throughout the inference pipeline:
+
+- **Raw output (`--raw-output-log`)**: Each sample includes `elapsed_seconds` field tracking inference time
+- **Final results**: Includes `per_domain_timing` dictionary with aggregates per domain:
+  - `mean`: average seconds per sample
+  - `min`: minimum seconds seen
+  - `max`: maximum seconds seen
+  - `total`: cumulative seconds for all samples in domain
+  - `sample_count`: number of samples evaluated
+
+Example results output:
+```json
+{
+  "per_domain_timing": {
+    "code": {
+      "mean": 4.23,
+      "min": 1.15,
+      "max": 8.92,
+      "total": 84.6,
+      "sample_count": 20
+    },
+    "math": {
+      "mean": 0.85,
+      "min": 0.21,
+      "max": 2.14,
+      "total": 17.0,
+      "sample_count": 20
+    }
+  }
+}
 ```
 
 ## Troubleshooting notes

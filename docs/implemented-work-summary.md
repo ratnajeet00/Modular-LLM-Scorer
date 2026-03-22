@@ -30,6 +30,11 @@ This file summarizes what has been implemented in the project.
 24. Enhanced logic evaluation with boolean normalization and single-letter extraction.
 25. Strict prompt enforcement for math final answers and knowledge conciseness.
 26. Local model optimizations (auto-timeout adjustment, retry increase, batch size caps).
+27. **NO timeout constraints** - models run indefinitely without preemption.
+28. **Complete code generation** - code prompts return full runnable Python with ALL imports, not just functions.
+29. **System prompt refusal block** - models instructed never to refuse: "Answer all types of questions".
+30. **Timing metrics** - elapsed_seconds tracking per sample and domain-level aggregates in results.
+31. **Enhanced raw output logging** - JSONL format includes elapsed_seconds and timing breakdown per domain.
 
 ## Current high-level execution flow
 

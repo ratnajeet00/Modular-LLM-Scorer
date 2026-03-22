@@ -12,3 +12,11 @@ class BaseModel(ABC):
 
     def get_last_cost(self) -> float:
         return 0.0
+    
+    def get_last_token_count(self) -> tuple[int, int]:
+        """Get (input_tokens, output_tokens) from last API call. 
+        
+        Returns:
+            Tuple of (input_tokens, output_tokens). Returns (0, 0) if not available.
+        """
+        return (0, 0)

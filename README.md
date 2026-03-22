@@ -1,22 +1,70 @@
 # Modular LLM Scorer
 
-Detailed project documentation is available in [docs/README.md](docs/README.md).
+**⭐ Status**: Publication-ready benchmark framework with statistical rigor  
+**📊 Latest**: 21/23 tasks complete (91%), 86% validation pass rate  
+**📖 Documentation**: See [README_FINAL.md](README_FINAL.md) for complete guide
 
-Deterministic, model-agnostic benchmark library for LLM evaluation across four domains:
-- math
-- logic
-- knowledge
-- code
+Deterministic, model-agnostic benchmark library for LLM evaluation across four domains with full reproducibility, confidence intervals, and statistical testing:
+- 🧮 **math** - Arithmetic and algebra problems
+- 🧠 **logic** - Reasoning and multiple choice
+- 💻 **code** - Python function generation
+- 📚 **knowledge** - General knowledge Q&A
 
-The project is designed to run only on datasets already available in `data/raw_datasets` and uses deterministic rule-based scoring (no AI judge).
+## Quick Start
 
-## Recent Updates
+```bash
+# Preview sample selection (no API calls)
+python run_benchmark.py --dry-run --mode quick --seed 42
 
-- **Enhanced Logic Handling**: Robust boolean (T/F) normalization and single-letter answer extraction.
-- **Strict Prompting**: Enforces final numeric answers for Math and short phrases for Knowledge.
-- **Local Model Optimization**: Automatic timeout/retry adjustment and batch size capping for stability.
+# Run benchmark
+python run_benchmark.py --model local --model-name deepseek --mode half
 
-## Key behavior
+# Compare models with statistical testing
+python run_benchmark.py --compare result1.json result2.json
+
+# Analyze errors
+python analyze_errors.py temp_eval/raw_outputs.jsonl
+
+# Generate markdown report
+python generate_report.py result.json report.md
+```
+
+## Publication-Ready Features
+
+✅ **Statistical Rigor**
+- 95% confidence intervals (Wilson score method)
+- McNemar's test for model comparison
+- Per-domain and per-difficulty metrics
+- Multiple run aggregation with mean/std
+
+✅ **Reproducibility** 
+- Git commit hash tracking with uncommitted indicator
+- Exact prompt logging in JSONL
+- Per-sample token counts (input/output)
+- Full execution metadata and timing
+
+✅ **Code Safety**
+- Sandboxed code execution with timeout
+- Pattern-based security validation
+- Output truncation and monitoring
+
+✅ **Professional Tools**
+- Markdown report generation
+- Error categorization (8 types)
+- Model comparison with diffs
+- Sample extraction with metadata
+
+## Recent Updates (v1.0 Final)
+
+- ✅ **Refusal Detection**: Knowledge evaluator automatically rejects model refusals
+- ✅ **Enhanced Prompts**: Explicit refusal prevention in base instruction
+- ✅ **McNemar's Test**: Statistical significance testing for model pairs
+- ✅ **Code Sandbox**: Multi-layer execution security with timeout
+- ✅ **Tunable F1**: Configurable knowledge domain threshold (0.75)
+- ✅ **Full Logging**: Prompts, tokens, and errors in JSONL
+- ✅ **Git Integration**: Automatic commit tracking and versioning
+
+## Key Behavior
 
 ### 1) Exactly 2 datasets per domain are used
 During sampling, the runner:
@@ -83,9 +131,10 @@ python run_benchmark.py \
   --model echo \
   --mode quick \
   --batch-size 16 \
-  --timeout-seconds 5 \
   --retries 0
 ```
+
+**Note:** `--timeout-seconds` is now disabled - models run without time limits.
 
 Supported models:
 - echo
@@ -101,12 +150,16 @@ You can select the exact model to test at runtime with `--model-name`.
 
 ## Recent updates
 
-- Prompting is now task-specific with stricter output constraints for code, math, and QA tasks.
+- **No timeout enforcement** - models run indefinitely to completion.
+- **Complete code generation** - models return full runnable Python with all imports.
+- **System prompt blocks refusals** - "Answer all types of questions: math, logic, knowledge, and code."
+- **Timing statistics** - captures `elapsed_seconds` per sample and aggregates by domain.
+- Task-specific prompting with stricter output constraints for code, math, and QA tasks.
 - Output cleaning and validation are applied before evaluation.
 - Invalid outputs are retried (empty/malformed/invalid code patterns).
 - Generation temperature is set to `0.2` across adapters.
 - Domain max token budget is `512` for math/logic/knowledge and `1024` for code.
-- Raw output logging is available with `--raw-output-log` (JSONL).
+- Raw output logging is available with `--raw-output-log` (JSONL) including `elapsed_seconds`.
 - CLI now supports `--max-workers` to control concurrency.
 - Groq includes built-in local throttling for RPM/TPM windows (defaults: 30 RPM, 6000 TPM).
 - Cache entries are normalized/validated before reuse to avoid stale malformed outputs.

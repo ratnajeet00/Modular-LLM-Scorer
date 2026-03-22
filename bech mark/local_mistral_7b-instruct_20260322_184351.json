@@ -1,0 +1,77 @@
+{
+  "model": "local:mistral:7b-instruct",
+  "mode": "quick",
+  "accuracy": 0.12,
+  "per_dataset": {
+    "gsm8k_main": 0.0,
+    "gsm8k_socratic": 0.0,
+    "mbpp_full": 0.230769,
+    "mbpp_sanitized": 0.416667,
+    "natural_questions": 0.076923,
+    "proofwriter": 0.153846,
+    "reclor": 0.0,
+    "squad": 0.083333
+  },
+  "per_domain": {
+    "code": 0.32,
+    "knowledge": 0.08,
+    "logic": 0.08,
+    "math": 0.0
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 21.015,
+      "min_seconds": 1.873,
+      "max_seconds": 73.464,
+      "total_seconds": 525.379,
+      "sample_count": 25
+    },
+    "knowledge": {
+      "mean_seconds": 4.647,
+      "min_seconds": 0.451,
+      "max_seconds": 30.001,
+      "total_seconds": 116.179,
+      "sample_count": 25
+    },
+    "logic": {
+      "mean_seconds": 3.039,
+      "min_seconds": 0.173,
+      "max_seconds": 12.306,
+      "total_seconds": 75.978,
+      "sample_count": 25
+    },
+    "math": {
+      "mean_seconds": 4.765,
+      "min_seconds": 0.274,
+      "max_seconds": 17.515,
+      "total_seconds": 119.136,
+      "sample_count": 25
+    }
+  },
+  "final_score": 0.096,
+  "total_questions": 100,
+  "correct_count": 12,
+  "wrong_count": 88,
+  "error_rate": 0.88,
+  "failure_rate": 0.17,
+  "non_empty_predictions": 83,
+  "empty_predictions": 17,
+  "call_error_count": 17,
+  "call_error_examples": [
+    "invalid-output-format",
+    "execution-error:name 'datetime' is not defined",
+    "execution-error:test-failed",
+    "execution-error:name 'reduce' is not defined",
+    "execution-error:list index out of range"
+  ],
+  "error_count": 18,
+  "error_examples": [
+    "invalid-output-format",
+    "execution-error:name 'datetime' is not defined",
+    "execution-error:test-failed",
+    "execution-error:name 'reduce' is not defined",
+    "execution-error:list index out of range"
+  ],
+  "cost": 0.0,
+  "seed": 42
+}
