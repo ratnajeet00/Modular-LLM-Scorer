@@ -27,6 +27,7 @@ class EvalRecord:
     expected: str
     correct: bool
     error: str | None = None
+    error_type: str | None = None  # generation_failure | format_error | wrong_answer | execution_error
     cost: float = 0.0
     elapsed_seconds: float = 0.0
     input_tokens: int = 0

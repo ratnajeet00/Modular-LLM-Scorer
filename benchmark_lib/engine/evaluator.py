@@ -9,11 +9,15 @@ import tempfile
 from pathlib import Path
 
 from ..utils.types import NormalizedSample
+from ..utils.logging import get_logger
+
+logger = get_logger("evaluator")
 
 
 # Configuration for evaluation thresholds
 # Can be adjusted based on evaluation strictness
 F1_THRESHOLD_KNOWLEDGE = 0.75  # Reduced from 0.8 for better partial match acceptance
+ENABLE_SANDBOXED_EVAL = True  # Optional sandboxed safety checks for code evaluation
 
 
 def _norm_text(s: str) -> str:
@@ -61,17 +65,54 @@ def _extract_number(s: str) -> float | None:
         return None
 
 
-def evaluate(sample: NormalizedSample, prediction: str) -> tuple[bool, str | None]:
+def evaluate(sample: NormalizedSample, prediction: str) -> tuple[bool, str | None, str | None]:
+    """
+    Evaluate a prediction. Returns (is_correct, error_msg, error_type).
+    error_type can be: generation_failure, format_error, wrong_answer, execution_error, or None for correct.
+    """
+    # First, check if prediction is effectively empty (generation failure)
+    if not prediction or not prediction.strip():
+        return False, "generation_failure", "generation_failure"
+    
     if sample.domain == "math":
-        return _eval_math(sample.answer, prediction), None
+        is_correct = _eval_math(sample.answer, prediction)
+        if is_correct:
+            return True, None, None
+        else:
+            return False, "wrong_answer", "wrong_answer"
+    
     if sample.domain == "logic":
-        return _eval_logic(sample, prediction), None
+        is_correct = _eval_logic(sample, prediction)
+        if is_correct:
+            return True, None, None
+        # Check if format is valid (should be A/B/C/D or True/False/Unknown)
+        pred_lower = prediction.strip().lower()
+        valid_formats = {"true", "false", "t", "f", "a", "b", "c", "d", "e", "unknown"}
+        if pred_lower not in valid_formats and not any(c in pred_lower for c in "abcde"):
+            return False, f"invalid-format:{pred_lower}", "format_error"
+        return False, "wrong_answer", "wrong_answer"
+    
     if sample.domain == "knowledge":
-        return _eval_knowledge(sample, prediction), None
+        is_correct = _eval_knowledge(sample, prediction)
+        if is_correct:
+            return True, None, None
+        else:
+            return False, "wrong_answer", "wrong_answer"
+    
     if sample.domain == "code":
         ok, err = _eval_code(sample, prediction)
-        return ok, err
-    return False, "unknown-domain"
+        if ok:
+            return True, None, None
+        # Classify the error type
+        if err == "empty-code":
+            return False, err, "generation_failure"
+        elif err and ("execution" in err.lower() or "timeout" in err.lower()):
+            return False, err, "execution_error"
+        else:
+            # Could be format or exec error
+            return False, err, "execution_error"  # Code errors are generally execution issues
+    
+    return False, "unknown-domain", "execution_error"
 
 
 def _is_pure_number_text(s: str) -> bool:
@@ -143,19 +184,43 @@ def _eval_logic(sample: NormalizedSample, prediction: str) -> bool:
         pred = "true"
     elif pred in ["false", "f"]:
         pred = "false"
+    elif pred in ["yes", "y"]:
+        pred = "true"
+    elif pred in ["no", "n"]:
+        pred = "false"
 
     if sample.options:
+        answer_raw = sample.answer.strip().upper()
         answer_norm = _norm_text(sample.answer)
+        answer_letter = None
+        correct_option_text = ""
+        letter_match = re.fullmatch(r"([A-E])", answer_raw)
+        if letter_match:
+            answer_letter = letter_match.group(1)
+            idx = ord(answer_letter) - ord("A")
+            if 0 <= idx < len(sample.options):
+                correct_option_text = _norm_text(sample.options[idx])
+
         if _norm_text(pred) == answer_norm:
+            return True
+        if answer_letter and re.search(rf"\b{answer_letter}\b", prediction.upper()):
+            return True
+        if correct_option_text and _norm_text(pred) == correct_option_text:
             return True
         # Accept answer letters A/B/C/D if options are provided.
         letter_match = re.search(r"\b([A-E])\b", pred.upper())
         if letter_match:
-            idx = ord(letter_match.group(1)) - ord("A")
+            pred_letter = letter_match.group(1)
+            if answer_letter and pred_letter == answer_letter:
+                return True
+            idx = ord(pred_letter) - ord("A")
             if 0 <= idx < len(sample.options):
-                return _norm_text(sample.options[idx]) == answer_norm
+                return _norm_text(sample.options[idx]) == answer_norm or _norm_text(sample.options[idx]) == correct_option_text
         return False
-        
+
+    answer_norm = _norm_text(sample.answer)
+    if answer_norm in {"true", "false"} and pred in {"true", "false"}:
+        return answer_norm == pred
     return _norm_text(pred) == _norm_text(sample.answer)
 
 
@@ -224,23 +289,28 @@ def _prepend_safe_imports(code: str) -> str:
 
 
 def _eval_code(sample: NormalizedSample, prediction: str) -> tuple[bool, str | None]:
-    code = _extract_code_block(prediction)
-    if not code:
+    raw_code = _extract_code_block(prediction)
+    if not raw_code:
+        logger.debug(f"[{sample.id}] No code block found in prediction")
         return False, "empty-code"
+    
+    logger.info(f"🧪 Testing code for {sample.id} ({sample.dataset})")
+    logger.info(f"Code:\n{'─'*70}\n{raw_code}\n{'─'*70}\n")
     
     # Optional sandboxed safety check (lightweight validation only)
     if ENABLE_SANDBOXED_EVAL:
         try:
             from .sandboxed_eval import validate_code_safety
-            is_safe, safety_msg = validate_code_safety(code, strict_mode=False)
+            is_safe, safety_msg = validate_code_safety(raw_code, strict_mode=False)
             if not is_safe:
+                logger.warning(f"[{sample.id}] Sandbox safety check failed: {safety_msg}")
                 return False, f"sandbox-{safety_msg.lower().replace(' ', '_')}"
         except ImportError:
             pass  # Sandboxed eval not available, continue normally
 
     # --- Apply code patches before execution ---
-    code = _patch_deprecated_imports(code)   # Fix 3
-    code = _prepend_safe_imports(code)        # Fix 4
+    code = _patch_deprecated_imports(raw_code)   # Fix 3
+    code = _prepend_safe_imports(code)           # Fix 4
 
     test_list = sample.metadata.get("tests", [])
     test_blob = sample.metadata.get("test", "")
@@ -410,10 +480,13 @@ def _eval_code(sample: NormalizedSample, prediction: str) -> tuple[bool, str | N
                     cwd=tmp,
                 )
             except subprocess.TimeoutExpired:
+                logger.error(f"✗ [timeout] Code execution exceeded 5s for {sample.id}")
                 return False, "code-timeout"
 
             if proc.returncode != 0 and not proc.stdout.strip():
-                return False, (proc.stderr or "code-exec-failed")[:500]
+                error_msg = (proc.stderr or "code-exec-failed")[:500]
+                logger.error(f"✗ [exec-failure] {sample.id}: {error_msg}")
+                return False, error_msg
 
             last_line = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else ""
             try:
@@ -422,8 +495,15 @@ def _eval_code(sample: NormalizedSample, prediction: str) -> tuple[bool, str | N
                 return False, (proc.stderr or proc.stdout or "invalid-test-output")[:500]
 
             if bool(payload.get("ok")):
+                logger.info(f"✓ Code test PASSED for {sample.id}")
+                logger.debug(f"Code:\n{code}\n")
                 return True, None
-            return False, str(payload.get("error") or "test-failed")
+            
+            error_msg = str(payload.get("error") or "test-failed")
+            logger.warning(f"✗ Code test FAILED for {sample.id}")
+            logger.debug(f"Code:\n{code}\n")
+            logger.debug(f"Error: {error_msg}")
+            return False, error_msg
 
         expected_output = sample.metadata.get("expected_output")
         if expected_output is None:
@@ -445,21 +525,41 @@ def _eval_code(sample: NormalizedSample, prediction: str) -> tuple[bool, str | N
                     cwd=tmp,
                 )
             except subprocess.TimeoutExpired:
+                logger.error(f"✗ [timeout] Output test exceeded 5s for {sample.id}")
                 return False, "code-timeout"
 
             if proc.returncode != 0:
-                return False, (proc.stderr or "code-exec-failed")[:500]
+                error_msg = (proc.stderr or "code-exec-failed")[:500]
+                logger.error(f"✗ [exec-failure] Output test for {sample.id}: {error_msg}")
+                return False, error_msg
 
             actual_norm = _norm_text(proc.stdout)
             expected_norm = _norm_text(_stringify_expected(expected_output))
+            
+            if proc.returncode == 0:
+                logger.info(f"📋 Code execution test for {sample.id}")
+                logger.info(f"Code:\n{'='*60}\n{code}\n{'='*60}")
+                logger.info(f"Expected output:\n{_stringify_expected(expected_output)[:200]}")
+                logger.info(f"Actual output:\n{proc.stdout[:200]}")
+            
             if actual_norm == expected_norm:
+                logger.info(f"✓ Output MATCHED for {sample.id}")
                 return True, None
 
             # Tolerate trailing explanations by checking output containment.
             if expected_norm and expected_norm in actual_norm:
+                logger.info(f"✓ Output MATCHED (with explanation) for {sample.id}")
                 return True, None
 
+            logger.warning(f"✗ Output MISMATCH for {sample.id}")
+            logger.debug(f"Expected (normalized): {expected_norm[:200]}")
+            logger.debug(f"Actual (normalized): {actual_norm[:200]}")
             return False, "output-mismatch"
 
     # Last resort fallback when no executable checks are available.
-    return _norm_text(sample.answer) == _norm_text(code), None
+    match = _norm_text(sample.answer) == _norm_text(raw_code)
+    if match:
+        logger.info(f"✓ [fallback] Code matches expected for {sample.id}")
+    else:
+        logger.warning(f"✗ [fallback] Code does not match expected for {sample.id}")
+    return match, None

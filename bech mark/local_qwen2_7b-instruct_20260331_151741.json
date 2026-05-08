@@ -1,0 +1,210 @@
+{
+  "model": "local:qwen2:7b-instruct",
+  "mode": "quick",
+  "accuracy": 0.312,
+  "per_dataset": {
+    "gsm8k_main": 0.349206,
+    "gsm8k_socratic": 0.290323,
+    "mbpp_full": 0.492063,
+    "mbpp_sanitized": 0.677419,
+    "natural_questions": 0.15873,
+    "proofwriter": 0.174603,
+    "reclor": 0.209677,
+    "squad": 0.145161
+  },
+  "per_domain": {
+    "code": 0.584,
+    "knowledge": 0.152,
+    "logic": 0.192,
+    "math": 0.32
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 2.3,
+      "min_seconds": 0.267,
+      "max_seconds": 12.309,
+      "total_seconds": 285.203,
+      "sample_count": 124
+    },
+    "knowledge": {
+      "mean_seconds": 0.857,
+      "min_seconds": 0.118,
+      "max_seconds": 6.864,
+      "total_seconds": 107.133,
+      "sample_count": 125
+    },
+    "logic": {
+      "mean_seconds": 0.559,
+      "min_seconds": 0.092,
+      "max_seconds": 5.368,
+      "total_seconds": 69.276,
+      "sample_count": 124
+    },
+    "math": {
+      "mean_seconds": 0.573,
+      "min_seconds": 0.108,
+      "max_seconds": 4.812,
+      "total_seconds": 71.609,
+      "sample_count": 125
+    }
+  },
+  "final_score": 0.2688,
+  "total_questions": 500,
+  "correct_count": 156,
+  "wrong_count": 344,
+  "error_rate": 0.688,
+  "failure_rate": 0.104,
+  "non_empty_predictions": 448,
+  "empty_predictions": 52,
+  "call_error_count": 52,
+  "call_error_examples": [
+    "execution-error:test-failed",
+    "execution-error:object of type 'int' has no len()",
+    "execution-error:name 'cmath' is not defined",
+    "execution-error:'list' object has no attribute 'split'",
+    "execution-error:k must be a non-negative integer"
+  ],
+  "error_count": 688,
+  "error_examples": [
+    "wrong_answer",
+    "execution-error:test-failed",
+    "execution-error:object of type 'int' has no len()",
+    "execution-error:name 'cmath' is not defined",
+    "execution-error:'list' object has no attribute 'split'"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 337,
+      "correct": 117,
+      "accuracy": 0.347181
+    },
+    "medium": {
+      "count": 126,
+      "correct": 30,
+      "accuracy": 0.238095
+    },
+    "hard": {
+      "count": 37,
+      "correct": 9,
+      "accuracy": 0.243243
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.312,
+    "overall_samples": 500,
+    "overall_correct": 156,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.584,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.0876
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.152,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.0532
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.192,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.048
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.32,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.08
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "execution-error:test-failed": 37,
+      "execution-error:name 'cmath' is not defined": 3,
+      "execution-error:object of type 'int' has no len()": 1,
+      "execution-error:'list' object has no attribute 'split'": 1,
+      "execution-error:k must be a non-negative integer": 1,
+      "execution-error:invalid literal for int() with base 10: 'p'": 1,
+      "invalid-output-format": 1,
+      "execution-error:'in <string>' requires string as left operand, not tuple": 1,
+      "execution-error:unsupported operand type(s) for %: 'list' and 'int'": 1,
+      "execution-error:name 'product' is not defined": 1,
+      "execution-error:name 'tan' is not defined": 1,
+      "execution-error:can only concatenate str (not \"int\") to str": 1,
+      "execution-error:largest_number() takes 1 positional argument but 2 were given": 1,
+      "execution-error:0 is not in list": 1
+    },
+    "knowledge": {
+      "wrong_answer": 102,
+      "invalid-output-format": 4
+    },
+    "logic": {
+      "wrong_answer": 101
+    },
+    "math": {
+      "wrong_answer": 85
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 52,
+    "format_errors": 0,
+    "wrong_answers": 292,
+    "execution_errors": 0,
+    "total_failures": 52
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ],
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ],
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 42
+}

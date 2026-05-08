@@ -1,0 +1,219 @@
+{
+  "model": "local:llama3.1:8b",
+  "mode": "quick",
+  "accuracy": 0.272,
+  "per_dataset": {
+    "gsm8k_main": 0.095238,
+    "gsm8k_socratic": 0.16129,
+    "mbpp_full": 0.460317,
+    "mbpp_sanitized": 0.548387,
+    "natural_questions": 0.222222,
+    "proofwriter": 0.285714,
+    "reclor": 0.209677,
+    "squad": 0.193548
+  },
+  "per_domain": {
+    "code": 0.504,
+    "knowledge": 0.208,
+    "logic": 0.248,
+    "math": 0.128
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 33.798,
+      "min_seconds": 3.538,
+      "max_seconds": 112.204,
+      "total_seconds": 3819.205,
+      "sample_count": 113
+    },
+    "knowledge": {
+      "mean_seconds": 7.559,
+      "min_seconds": 0.569,
+      "max_seconds": 53.18,
+      "total_seconds": 899.543,
+      "sample_count": 119
+    },
+    "logic": {
+      "mean_seconds": 5.909,
+      "min_seconds": 0.394,
+      "max_seconds": 39.031,
+      "total_seconds": 691.304,
+      "sample_count": 117
+    },
+    "math": {
+      "mean_seconds": 7.154,
+      "min_seconds": 0.409,
+      "max_seconds": 40.642,
+      "total_seconds": 865.68,
+      "sample_count": 121
+    }
+  },
+  "final_score": 0.2424,
+  "total_questions": 500,
+  "correct_count": 136,
+  "wrong_count": 364,
+  "error_rate": 0.728,
+  "failure_rate": 0.124,
+  "non_empty_predictions": 438,
+  "empty_predictions": 62,
+  "call_error_count": 62,
+  "call_error_examples": [
+    "invalid-output-format",
+    "execution-error:test-failed",
+    "execution-error:name 'defaultdict' is not defined",
+    "execution-error:name 'calendar' is not defined",
+    "execution-error:name 'Counter' is not defined"
+  ],
+  "error_count": 728,
+  "error_examples": [
+    "wrong_answer",
+    "invalid-output-format",
+    "execution-error:test-failed",
+    "execution-error:name 'defaultdict' is not defined",
+    "execution-error:name 'calendar' is not defined"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 335,
+      "correct": 112,
+      "accuracy": 0.334328
+    },
+    "medium": {
+      "count": 128,
+      "correct": 18,
+      "accuracy": 0.140625
+    },
+    "hard": {
+      "count": 37,
+      "correct": 6,
+      "accuracy": 0.162162
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.272,
+    "overall_samples": 500,
+    "overall_correct": 136,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.504,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.0756
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.208,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.0728
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.248,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.062
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.128,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.032
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "execution-error:test-failed": 37,
+      "execution-error:name 'Counter' is not defined": 3,
+      "execution-error:name 'np' is not defined": 2,
+      "invalid-output-format": 1,
+      "execution-error:name 'defaultdict' is not defined": 1,
+      "execution-error:name 'calendar' is not defined": 1,
+      "execution-error:'list' object has no attribute 'split'": 1,
+      "execution-error:'list' object cannot be interpreted as an integer": 1,
+      "execution-error:name 'cmath' is not defined": 1,
+      "execution-error:name 'itemgetter' is not defined": 1,
+      "execution-error:tuple index out of range": 1,
+      "execution-error:argument of type 'int' is not iterable": 1,
+      "execution-error:too many values to unpack (expected 2)": 1,
+      "execution-error:median_length_of_trapezium() missing 1 required positional argument: 'd'": 1,
+      "execution-error:divide_tuples() takes 1 positional argument but 2 were given": 1,
+      "execution-error:can only concatenate list (not \"tuple\") to list": 1,
+      "execution-error:'int' object is not iterable": 1,
+      "execution-error:name 'statistics' is not defined": 1,
+      "execution-error:'<=' not supported between instances of 'int' and 'tuple'": 1,
+      "execution-error:name 'datetime' is not defined": 1,
+      "execution-error:parabola_directrix() takes 2 positional arguments but 3 were given": 1,
+      "execution-error:code-timeout": 1,
+      "execution-error:math domain error": 1
+    },
+    "knowledge": {
+      "wrong_answer": 95,
+      "invalid-output-format": 4
+    },
+    "logic": {
+      "wrong_answer": 94
+    },
+    "math": {
+      "wrong_answer": 109
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 62,
+    "format_errors": 0,
+    "wrong_answers": 302,
+    "execution_errors": 0,
+    "total_failures": 62
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ],
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ],
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 123
+}

@@ -381,6 +381,8 @@ def main() -> None:
     parser.add_argument("--hf-use-inference-api", action="store_true", help="Use HF Inference API instead of local transformers")
     parser.add_argument("--hf-device", default="cpu", choices=["cpu", "cuda", "mps"], help="Device for local HF inference (cpu, cuda, mps)")
     parser.add_argument("--mode", default="half", choices=["quick", "half", "full"])
+    parser.add_argument("--domain", default=None, choices=["math", "logic", "knowledge", "code"], 
+                        help="Filter to only run a specific domain (math, logic, knowledge, or code)")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--seeds", default=None, help="Comma-separated seeds for multi-seed runs, e.g. 42,43,44")
     parser.add_argument("--batch-size", type=int, default=8)
@@ -438,6 +440,7 @@ def main() -> None:
             timeout_seconds=args.timeout_seconds,
             retries=args.retries,
             raw_output_log_path=args.raw_output_log,
+            domain_filter=args.domain,
         )
         run_result["seed"] = seed
         runs.append(run_result)

@@ -505,7 +505,7 @@ def run_inference(
                         raise ValueError("invalid-output-format")
 
                     if sample.domain == "code":
-                        ok_code, err_code = evaluate(sample, prediction)
+                        ok_code, err_code, err_type = evaluate(sample, prediction)
                         if not ok_code:
                             raise ValueError(f"execution-error:{err_code or 'unknown'}")
 
@@ -552,7 +552,7 @@ def run_inference(
         # Track elapsed time (only measure API latency, not cache lookups)
         elapsed_seconds = 0.0 if is_from_cache else time.monotonic() - sample_start_time
 
-        correct, eval_error = evaluate(sample, prediction or "")
+        correct, eval_error, error_type = evaluate(sample, prediction or "")
         if raw_output_file is not None:
             payload = {
                 "sample_id": sample.id,
@@ -581,6 +581,7 @@ def run_inference(
             expected=sample.answer,
             correct=correct,
             error=error or eval_error,
+            error_type=error_type,
             cost=cost,
             elapsed_seconds=elapsed_seconds,
             input_tokens=input_tokens,

@@ -1,0 +1,201 @@
+{
+  "model": "local:deepseek-coder:6.7b",
+  "mode": "quick",
+  "accuracy": 0.166,
+  "per_dataset": {
+    "gsm8k_main": 0.047619,
+    "gsm8k_socratic": 0.032258,
+    "mbpp_full": 0.31746,
+    "mbpp_sanitized": 0.435484,
+    "natural_questions": 0.0,
+    "proofwriter": 0.301587,
+    "reclor": 0.177419,
+    "squad": 0.016129
+  },
+  "per_domain": {
+    "code": 0.376,
+    "knowledge": 0.008,
+    "logic": 0.24,
+    "math": 0.04
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 40.152,
+      "min_seconds": 1.614,
+      "max_seconds": 90.146,
+      "total_seconds": 4175.788,
+      "sample_count": 104
+    },
+    "knowledge": {
+      "mean_seconds": 8.571,
+      "min_seconds": 0.535,
+      "max_seconds": 52.64,
+      "total_seconds": 917.089,
+      "sample_count": 107
+    },
+    "logic": {
+      "mean_seconds": 12.939,
+      "min_seconds": 0.159,
+      "max_seconds": 87.349,
+      "total_seconds": 1345.673,
+      "sample_count": 104
+    },
+    "math": {
+      "mean_seconds": 19.166,
+      "min_seconds": 0.602,
+      "max_seconds": 86.712,
+      "total_seconds": 2299.945,
+      "sample_count": 120
+    }
+  },
+  "final_score": 0.1292,
+  "total_questions": 500,
+  "correct_count": 83,
+  "wrong_count": 417,
+  "error_rate": 0.834,
+  "failure_rate": 0.156,
+  "non_empty_predictions": 422,
+  "empty_predictions": 78,
+  "call_error_count": 78,
+  "call_error_examples": [
+    "invalid-output-format",
+    "execution-error:test-failed",
+    "execution-error:name 'pd' is not defined",
+    "execution-error:'int' object is not iterable"
+  ],
+  "error_count": 834,
+  "error_examples": [
+    "invalid-output-format",
+    "wrong_answer",
+    "execution-error:test-failed",
+    "execution-error:name 'pd' is not defined",
+    "execution-error:'int' object is not iterable"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 336,
+      "correct": 74,
+      "accuracy": 0.220238
+    },
+    "medium": {
+      "count": 127,
+      "correct": 7,
+      "accuracy": 0.055118
+    },
+    "hard": {
+      "count": 37,
+      "correct": 2,
+      "accuracy": 0.054054
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.166,
+    "overall_samples": 500,
+    "overall_correct": 83,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.376,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.0564
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.008,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.0028
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.24,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.06
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.04,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.01
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "invalid-output-format": 67,
+      "execution-error:test-failed": 9,
+      "execution-error:name 'pd' is not defined": 1,
+      "execution-error:'int' object is not iterable": 1
+    },
+    "knowledge": {
+      "wrong_answer": 122,
+      "invalid-output-format": 2
+    },
+    "logic": {
+      "wrong_answer": 68,
+      "invalid-output-format": 27
+    },
+    "math": {
+      "wrong_answer": 86,
+      "invalid-output-format": 34
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 78,
+    "format_errors": 0,
+    "wrong_answers": 339,
+    "execution_errors": 0,
+    "total_failures": 78
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ],
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 7
+}

@@ -1,0 +1,203 @@
+{
+  "model": "local:deepseek-coder:6.7b",
+  "mode": "quick",
+  "accuracy": 0.146,
+  "per_dataset": {
+    "gsm8k_main": 0.063492,
+    "gsm8k_socratic": 0.064516,
+    "mbpp_full": 0.253968,
+    "mbpp_sanitized": 0.403226,
+    "natural_questions": 0.015873,
+    "proofwriter": 0.222222,
+    "reclor": 0.129032,
+    "squad": 0.016129
+  },
+  "per_domain": {
+    "code": 0.328,
+    "knowledge": 0.016,
+    "logic": 0.176,
+    "math": 0.064
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 39.119,
+      "min_seconds": 1.334,
+      "max_seconds": 94.002,
+      "total_seconds": 4342.234,
+      "sample_count": 111
+    },
+    "knowledge": {
+      "mean_seconds": 9.02,
+      "min_seconds": 0.375,
+      "max_seconds": 52.261,
+      "total_seconds": 1001.269,
+      "sample_count": 111
+    },
+    "logic": {
+      "mean_seconds": 14.462,
+      "min_seconds": 0.168,
+      "max_seconds": 95.86,
+      "total_seconds": 1359.381,
+      "sample_count": 94
+    },
+    "math": {
+      "mean_seconds": 19.319,
+      "min_seconds": 1.814,
+      "max_seconds": 69.599,
+      "total_seconds": 2163.693,
+      "sample_count": 112
+    }
+  },
+  "final_score": 0.1148,
+  "total_questions": 500,
+  "correct_count": 73,
+  "wrong_count": 427,
+  "error_rate": 0.854,
+  "failure_rate": 0.168,
+  "non_empty_predictions": 416,
+  "empty_predictions": 84,
+  "call_error_count": 84,
+  "call_error_examples": [
+    "invalid-output-format",
+    "execution-error:argument of type 'int' is not iterable",
+    "execution-error:test-failed",
+    "execution-error:can only concatenate str (not \"int\") to str",
+    "execution-error:name 'date' is not defined"
+  ],
+  "error_count": 854,
+  "error_examples": [
+    "invalid-output-format",
+    "wrong_answer",
+    "execution-error:argument of type 'int' is not iterable",
+    "execution-error:test-failed",
+    "execution-error:can only concatenate str (not \"int\") to str"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 337,
+      "correct": 63,
+      "accuracy": 0.186944
+    },
+    "medium": {
+      "count": 126,
+      "correct": 8,
+      "accuracy": 0.063492
+    },
+    "hard": {
+      "count": 37,
+      "correct": 2,
+      "accuracy": 0.054054
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.146,
+    "overall_samples": 500,
+    "overall_correct": 73,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.328,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.0492
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.016,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.0056
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.176,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.044
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.064,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.016
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "invalid-output-format": 71,
+      "execution-error:test-failed": 10,
+      "execution-error:argument of type 'int' is not iterable": 1,
+      "execution-error:can only concatenate str (not \"int\") to str": 1,
+      "execution-error:name 'date' is not defined": 1
+    },
+    "knowledge": {
+      "wrong_answer": 122,
+      "invalid-output-format": 1
+    },
+    "logic": {
+      "wrong_answer": 73,
+      "invalid-output-format": 30
+    },
+    "math": {
+      "wrong_answer": 94,
+      "invalid-output-format": 23
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 84,
+    "format_errors": 0,
+    "wrong_answers": 343,
+    "execution_errors": 0,
+    "total_failures": 84
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ],
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ],
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 42
+}

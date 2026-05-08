@@ -7,7 +7,7 @@ from ..utils.types import NormalizedSample
 
 
 MODE_SIZES = {
-    "quick": 100,
+    "quick": 500,
     "half": 1500,
     "full": 6000,
 }

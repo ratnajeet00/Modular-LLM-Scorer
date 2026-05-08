@@ -79,14 +79,21 @@ Entrypoint: `run_benchmark.py`
 - `--model` (`echo`, `openai`, `openrouter`, `local`, `huggingface`, `gemini`, `together`, `groq`)
 - `--model-name` (explicit model id)
 - `--mode` (`quick`, `half`, `full`)
-- `--seed` / `--seeds`
-- `--batch-size`
-- `--max-workers`
+- `--seed` / `--seeds` (single seed or CSV-separated list for multiple runs)
+- `--batch-size` (default 4)
+- `--max-workers` (default 8)
 - `--timeout-seconds` (DISABLED - models run without time limits, argument accepted for backward compatibility)
-- `--retries`
-- `--raw-output-log` (outputs include `elapsed_seconds` per sample)
-- `--env-file`
+- `--retries` (default 2)
+- `--raw-output-log` (outputs include `elapsed_seconds` per sample, plus question/prediction/error)
+- `--env-file` (default `.env`)
 - local/HF specific args (`--local-base-url`, `--local-api-key`, `--hf-api-token`, `--hf-use-inference-api`, `--hf-device`)
+
+### Analysis & Comparison Args (NEW)
+
+- `--dry-run` - **Preview sample selection without API calls** (useful for verifying sampling strategy)
+- `--compare` - **Side-by-side model comparison with McNemar's test**
+  - Usage: `python run_benchmark.py --compare result1.json result2.json`
+  - Outputs: Accuracy delta, p-value, significance interpretation
 
 ## Provider testing commands (3 per provider)
 

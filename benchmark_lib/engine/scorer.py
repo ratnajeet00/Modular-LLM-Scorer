@@ -229,28 +229,41 @@ def score(records: list[EvalRecord], model_name: str, mode: str, selected_datase
             )
             per_domain_errors[domain] = dict(sorted_errors)
     
-    # Build failure breakdown: categorize failures types
+    # Build failure breakdown: categorize failures by type
     failure_breakdown = {
-        "empty_predictions": 0,
-        "execution_errors": 0,
+        "generation_failures": 0,
         "format_errors": 0,
-        "other_errors": 0,
+        "wrong_answers": 0,
+        "execution_errors": 0,
         "total_failures": call_error_count,
     }
-    for error_type, count in errors_by_domain.values[0].items() if errors_by_domain else []:
-        pass
-    # Actually, let's build this by scanning the records directly
+    # Build this by scanning the records and using structured error_type field
     for r in records:
         if r.error:
-            error_lower = r.error.lower()
-            if "execution-error" in error_lower:
-                failure_breakdown["execution_errors"] += 1
-            elif "invalid-output-format" in error_lower or "format" in error_lower:
+            error_count += 1
+            # Use the structured error_type field if available, otherwise infer from error message
+            if r.error_type == "generation_failure":
+                failure_breakdown["generation_failures"] += 1
+            elif r.error_type == "format_error":
                 failure_breakdown["format_errors"] += 1
+            elif r.error_type == "wrong_answer":
+                failure_breakdown["wrong_answers"] += 1
+            elif r.error_type == "execution_error":
+                failure_breakdown["execution_errors"] += 1
             else:
-                failure_breakdown["other_errors"] += 1
+                # Fallback to inferring from error message
+                error_lower = r.error.lower()
+                if not r.prediction.strip():
+                    failure_breakdown["generation_failures"] += 1
+                elif "execution-error" in error_lower or "code-exec" in error_lower or "code-timeout" in error_lower:
+                    failure_breakdown["execution_errors"] += 1
+                elif "invalid-output-format" in error_lower or "invalid-format" in error_lower or "format" in error_lower:
+                    failure_breakdown["format_errors"] += 1
+                else:
+                    # Unknown error type - could be wrong answer or execution
+                    failure_breakdown["execution_errors"] += 1
         elif not r.prediction.strip():
-            failure_breakdown["empty_predictions"] += 1
+            failure_breakdown["generation_failures"] += 1
 
     result = {
         "model": model_name,

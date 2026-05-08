@@ -1,0 +1,213 @@
+{
+  "model": "local:mistral:7b-instruct",
+  "mode": "quick",
+  "accuracy": 0.126,
+  "per_dataset": {
+    "gsm8k_main": 0.063492,
+    "gsm8k_socratic": 0.0,
+    "mbpp_full": 0.126984,
+    "mbpp_sanitized": 0.241935,
+    "natural_questions": 0.206349,
+    "proofwriter": 0.142857,
+    "reclor": 0.0,
+    "squad": 0.225806
+  },
+  "per_domain": {
+    "code": 0.184,
+    "knowledge": 0.216,
+    "logic": 0.072,
+    "math": 0.032
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 16.342,
+      "min_seconds": 0.824,
+      "max_seconds": 39.692,
+      "total_seconds": 1863.024,
+      "sample_count": 114
+    },
+    "knowledge": {
+      "mean_seconds": 2.741,
+      "min_seconds": 0.096,
+      "max_seconds": 21.876,
+      "total_seconds": 304.284,
+      "sample_count": 111
+    },
+    "logic": {
+      "mean_seconds": 1.552,
+      "min_seconds": 0.066,
+      "max_seconds": 9.149,
+      "total_seconds": 172.297,
+      "sample_count": 111
+    },
+    "math": {
+      "mean_seconds": 1.857,
+      "min_seconds": 0.102,
+      "max_seconds": 8.629,
+      "total_seconds": 222.877,
+      "sample_count": 120
+    }
+  },
+  "final_score": 0.1292,
+  "total_questions": 500,
+  "correct_count": 63,
+  "wrong_count": 437,
+  "error_rate": 0.874,
+  "failure_rate": 0.204,
+  "non_empty_predictions": 398,
+  "empty_predictions": 102,
+  "call_error_count": 102,
+  "call_error_examples": [
+    "execution-error:name 'types' is not defined",
+    "invalid-output-format",
+    "execution-error:name 'Union' is not defined",
+    "execution-error:name 'itemgetter' is not defined",
+    "execution-error:name 'factorial' is not defined"
+  ],
+  "error_count": 874,
+  "error_examples": [
+    "wrong_answer",
+    "execution-error:name 'types' is not defined",
+    "invalid-output-format",
+    "execution-error:name 'Union' is not defined",
+    "execution-error:name 'itemgetter' is not defined"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 337,
+      "correct": 49,
+      "accuracy": 0.145401
+    },
+    "medium": {
+      "count": 126,
+      "correct": 13,
+      "accuracy": 0.103175
+    },
+    "hard": {
+      "count": 37,
+      "correct": 1,
+      "accuracy": 0.027027
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.126,
+    "overall_samples": 500,
+    "overall_correct": 63,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.184,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.0276
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.216,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.0756
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.072,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.018
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.032,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.008
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "invalid-output-format": 81,
+      "execution-error:test-failed": 4,
+      "execution-error:name 'factorial' is not defined": 3,
+      "execution-error:name 'types' is not defined": 1,
+      "execution-error:name 'Union' is not defined": 1,
+      "execution-error:name 'itemgetter' is not defined": 1,
+      "execution-error:'list' object has no attribute 'split'": 1,
+      "execution-error:name 'i' is not defined": 1,
+      "execution-error:name 'Set' is not defined": 1,
+      "execution-error:unsupported operand type(s) for ^: 'str' and 'str'": 1,
+      "execution-error:name 'List' is not defined": 1,
+      "execution-error:name 'groupby' is not defined": 1,
+      "execution-error:name 'pi' is not defined": 1,
+      "execution-error:name 'Counter' is not defined": 1,
+      "execution-error:name 'urllib' is not defined": 1,
+      "execution-error:name 'np' is not defined": 1,
+      "execution-error:name 'date' is not defined": 1
+    },
+    "knowledge": {
+      "wrong_answer": 90,
+      "invalid-output-format": 8
+    },
+    "logic": {
+      "wrong_answer": 116
+    },
+    "math": {
+      "wrong_answer": 121
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 102,
+    "format_errors": 0,
+    "wrong_answers": 335,
+    "execution_errors": 0,
+    "total_failures": 102
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ],
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ],
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 42
+}

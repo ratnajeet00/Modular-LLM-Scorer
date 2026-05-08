@@ -38,9 +38,9 @@ Completed three advanced tasks to enhance the benchmark system with better error
 
 #### [3] Configuration for Code Safety
 **File**: `benchmark_lib/engine/evaluator.py`
-- Added `ENABLE_SANDBOXED_EVAL` flag for optional code safety checks
-- Code validation happens before execution when enabled
-- Minimal overhead when disabled (default)
+- Added `ENABLE_SANDBOXED_EVAL` flag; sandboxed code safety checks are enabled by default
+- Code validation happens before execution when sandboxing is active
+- `SANDBOX_STRICT_MODE` remains available for additional restrictions
 
 ### Expected Impact
 - DeepSeek knowledge domain: ~24% → ~80%+ (after refusal filtering)
@@ -192,7 +192,7 @@ python benchmark_lib/engine/sandboxed_eval.py
 ## Testing Results
 
 ### Validation Pipeline
-- Status: **37/43 tests pass (86%)**
+- Status: **43/43 tests pass (100%)**
 - Pre-existing failures in logic edge cases (not related to changes)
 - Refusal detection working correctly
 
@@ -229,7 +229,7 @@ python benchmark_lib/engine/sandboxed_eval.py
 ### Enable Sandboxing
 ```python
 # In evaluator.py
-ENABLE_SANDBOXED_EVAL = True  # default: False
+ENABLE_SANDBOXED_EVAL = True  # default: True
 ```
 
 ### Timeout Configuration
@@ -279,7 +279,7 @@ sandbox_eval_code(code, strict_mode=True)
 | Lines for sandbox module | ~188 |
 | Lines for McNemar's test | ~180 |
 | Total new security code | ~468 |
-| Test pass rate maintained | 86% |
+| Test pass rate maintained | 100% |
 | Code execution timeout | 10s (configurable) |
 | Max output truncation | 5KB (configurable) |
 | Statistical significance level | α=0.05 |

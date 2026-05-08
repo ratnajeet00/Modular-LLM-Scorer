@@ -1,0 +1,213 @@
+{
+  "model": "local:mistral:7b-instruct",
+  "mode": "quick",
+  "accuracy": 0.132,
+  "per_dataset": {
+    "gsm8k_main": 0.031746,
+    "gsm8k_socratic": 0.032258,
+    "mbpp_full": 0.206349,
+    "mbpp_sanitized": 0.096774,
+    "natural_questions": 0.190476,
+    "proofwriter": 0.269841,
+    "reclor": 0.032258,
+    "squad": 0.193548
+  },
+  "per_domain": {
+    "code": 0.152,
+    "knowledge": 0.192,
+    "logic": 0.152,
+    "math": 0.032
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 15.241,
+      "min_seconds": 0.743,
+      "max_seconds": 44.4,
+      "total_seconds": 1874.612,
+      "sample_count": 123
+    },
+    "knowledge": {
+      "mean_seconds": 2.113,
+      "min_seconds": 0.12,
+      "max_seconds": 17.841,
+      "total_seconds": 259.938,
+      "sample_count": 123
+    },
+    "logic": {
+      "mean_seconds": 1.474,
+      "min_seconds": 0.065,
+      "max_seconds": 8.059,
+      "total_seconds": 176.858,
+      "sample_count": 120
+    },
+    "math": {
+      "mean_seconds": 1.853,
+      "min_seconds": 0.093,
+      "max_seconds": 12.292,
+      "total_seconds": 227.945,
+      "sample_count": 123
+    }
+  },
+  "final_score": 0.136,
+  "total_questions": 500,
+  "correct_count": 66,
+  "wrong_count": 434,
+  "error_rate": 0.868,
+  "failure_rate": 0.212,
+  "non_empty_predictions": 394,
+  "empty_predictions": 106,
+  "call_error_count": 106,
+  "call_error_examples": [
+    "invalid-output-format",
+    "execution-error:test-failed",
+    "execution-error:name 'urllib' is not defined",
+    "execution-error:name 'January' is not defined",
+    "execution-error:can only concatenate str (not \"list\") to str"
+  ],
+  "error_count": 868,
+  "error_examples": [
+    "wrong_answer",
+    "invalid-output-format",
+    "execution-error:test-failed",
+    "execution-error:name 'urllib' is not defined",
+    "execution-error:name 'January' is not defined"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 335,
+      "correct": 57,
+      "accuracy": 0.170149
+    },
+    "medium": {
+      "count": 128,
+      "correct": 8,
+      "accuracy": 0.0625
+    },
+    "hard": {
+      "count": 37,
+      "correct": 1,
+      "accuracy": 0.027027
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.132,
+    "overall_samples": 500,
+    "overall_correct": 66,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.152,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.0228
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.192,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.0672
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.152,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.038
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.032,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.008
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "invalid-output-format": 80,
+      "execution-error:test-failed": 7,
+      "execution-error:name 'Counter' is not defined": 3,
+      "execution-error:name 'List' is not defined": 2,
+      "execution-error:name 'factorial' is not defined": 2,
+      "execution-error:name 'urllib' is not defined": 1,
+      "execution-error:name 'January' is not defined": 1,
+      "execution-error:can only concatenate str (not \"list\") to str": 1,
+      "execution-error:name 'eq' is not defined": 1,
+      "execution-error:eq expected 2 arguments, got 8": 1,
+      "execution-error:argument of type 'int' is not iterable": 1,
+      "execution-error:name 'sqrt' is not defined": 1,
+      "execution-error:name 'Union' is not defined": 1,
+      "execution-error:module 'math' has no attribute 'isodd'": 1,
+      "execution-error:name 'comb' is not defined": 1,
+      "execution-error:name 'ceil' is not defined": 1,
+      "execution-error:cannot access local variable 'adverbs' where it is not associated with a value": 1
+    },
+    "knowledge": {
+      "wrong_answer": 92,
+      "invalid-output-format": 9
+    },
+    "logic": {
+      "wrong_answer": 106
+    },
+    "math": {
+      "wrong_answer": 121
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 106,
+    "format_errors": 0,
+    "wrong_answers": 328,
+    "execution_errors": 0,
+    "total_failures": 106
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ],
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ],
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 123
+}

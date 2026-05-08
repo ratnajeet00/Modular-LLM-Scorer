@@ -1,0 +1,205 @@
+{
+  "model": "local:qwen2:7b-instruct",
+  "mode": "quick",
+  "accuracy": 0.33,
+  "per_dataset": {
+    "gsm8k_main": 0.365079,
+    "gsm8k_socratic": 0.274194,
+    "mbpp_full": 0.492063,
+    "mbpp_sanitized": 0.645161,
+    "natural_questions": 0.174603,
+    "proofwriter": 0.285714,
+    "reclor": 0.258065,
+    "squad": 0.145161
+  },
+  "per_domain": {
+    "code": 0.568,
+    "knowledge": 0.16,
+    "logic": 0.272,
+    "math": 0.32
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 2.586,
+      "min_seconds": 0.28,
+      "max_seconds": 11.657,
+      "total_seconds": 284.505,
+      "sample_count": 110
+    },
+    "knowledge": {
+      "mean_seconds": 0.668,
+      "min_seconds": 0.096,
+      "max_seconds": 5.776,
+      "total_seconds": 77.471,
+      "sample_count": 116
+    },
+    "logic": {
+      "mean_seconds": 0.499,
+      "min_seconds": 0.094,
+      "max_seconds": 3.114,
+      "total_seconds": 58.913,
+      "sample_count": 118
+    },
+    "math": {
+      "mean_seconds": 0.491,
+      "min_seconds": 0.108,
+      "max_seconds": 3.054,
+      "total_seconds": 59.902,
+      "sample_count": 122
+    }
+  },
+  "final_score": 0.2892,
+  "total_questions": 500,
+  "correct_count": 165,
+  "wrong_count": 335,
+  "error_rate": 0.67,
+  "failure_rate": 0.108,
+  "non_empty_predictions": 446,
+  "empty_predictions": 54,
+  "call_error_count": 54,
+  "call_error_examples": [
+    "execution-error:test-failed",
+    "execution-error:base is not invertible for the given modulus",
+    "execution-error:'list' object has no attribute 'split'",
+    "execution-error:integer modulo by zero",
+    "execution-error:'key'"
+  ],
+  "error_count": 670,
+  "error_examples": [
+    "execution-error:test-failed",
+    "wrong_answer",
+    "execution-error:base is not invertible for the given modulus",
+    "invalid-output-format",
+    "execution-error:'list' object has no attribute 'split'"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 336,
+      "correct": 126,
+      "accuracy": 0.375
+    },
+    "medium": {
+      "count": 127,
+      "correct": 28,
+      "accuracy": 0.220472
+    },
+    "hard": {
+      "count": 37,
+      "correct": 11,
+      "accuracy": 0.297297
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.33,
+    "overall_samples": 500,
+    "overall_correct": 165,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.568,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.0852
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.16,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.056
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.272,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.068
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.32,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.08
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "execution-error:test-failed": 45,
+      "execution-error:'int' object is not iterable": 2,
+      "execution-error:base is not invertible for the given modulus": 1,
+      "execution-error:'list' object has no attribute 'split'": 1,
+      "execution-error:integer modulo by zero": 1,
+      "execution-error:'key'": 1,
+      "execution-error:power_list() takes 1 positional argument but 2 were given": 1,
+      "execution-error:No module named 'sympy'": 1,
+      "execution-error:argument of type 'int' is not iterable": 1
+    },
+    "knowledge": {
+      "wrong_answer": 99,
+      "invalid-output-format": 6
+    },
+    "logic": {
+      "wrong_answer": 91
+    },
+    "math": {
+      "wrong_answer": 85
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 54,
+    "format_errors": 0,
+    "wrong_answers": 281,
+    "execution_errors": 0,
+    "total_failures": 54
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ],
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 7
+}

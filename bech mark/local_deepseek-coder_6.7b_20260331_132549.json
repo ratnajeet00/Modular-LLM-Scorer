@@ -1,0 +1,201 @@
+{
+  "model": "local:deepseek-coder:6.7b",
+  "mode": "quick",
+  "accuracy": 0.142,
+  "per_dataset": {
+    "gsm8k_main": 0.031746,
+    "gsm8k_socratic": 0.048387,
+    "mbpp_full": 0.31746,
+    "mbpp_sanitized": 0.290323,
+    "natural_questions": 0.0,
+    "proofwriter": 0.301587,
+    "reclor": 0.129032,
+    "squad": 0.016129
+  },
+  "per_domain": {
+    "code": 0.304,
+    "knowledge": 0.008,
+    "logic": 0.216,
+    "math": 0.04
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 52.354,
+      "min_seconds": 2.519,
+      "max_seconds": 104.265,
+      "total_seconds": 5497.134,
+      "sample_count": 105
+    },
+    "knowledge": {
+      "mean_seconds": 10.127,
+      "min_seconds": 0.244,
+      "max_seconds": 75.795,
+      "total_seconds": 1032.952,
+      "sample_count": 102
+    },
+    "logic": {
+      "mean_seconds": 16.381,
+      "min_seconds": 0.182,
+      "max_seconds": 70.801,
+      "total_seconds": 1638.144,
+      "sample_count": 100
+    },
+    "math": {
+      "mean_seconds": 24.389,
+      "min_seconds": 2.496,
+      "max_seconds": 106.167,
+      "total_seconds": 2731.61,
+      "sample_count": 112
+    }
+  },
+  "final_score": 0.1124,
+  "total_questions": 500,
+  "correct_count": 71,
+  "wrong_count": 429,
+  "error_rate": 0.858,
+  "failure_rate": 0.174,
+  "non_empty_predictions": 413,
+  "empty_predictions": 87,
+  "call_error_count": 87,
+  "call_error_examples": [
+    "invalid-output-format",
+    "execution-error:test-failed",
+    "execution-error:'in <string>' requires string as left operand, not list",
+    "execution-error:'int' object is not iterable"
+  ],
+  "error_count": 858,
+  "error_examples": [
+    "wrong_answer",
+    "invalid-output-format",
+    "execution-error:test-failed",
+    "execution-error:'in <string>' requires string as left operand, not list",
+    "execution-error:'int' object is not iterable"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 335,
+      "correct": 63,
+      "accuracy": 0.18806
+    },
+    "medium": {
+      "count": 128,
+      "correct": 4,
+      "accuracy": 0.03125
+    },
+    "hard": {
+      "count": 37,
+      "correct": 4,
+      "accuracy": 0.108108
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.142,
+    "overall_samples": 500,
+    "overall_correct": 71,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.304,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.0456
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.008,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.0028
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.216,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.054
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.04,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.01
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "invalid-output-format": 81,
+      "execution-error:test-failed": 4,
+      "execution-error:'in <string>' requires string as left operand, not list": 1,
+      "execution-error:'int' object is not iterable": 1
+    },
+    "knowledge": {
+      "wrong_answer": 120,
+      "invalid-output-format": 4
+    },
+    "logic": {
+      "wrong_answer": 67,
+      "invalid-output-format": 31
+    },
+    "math": {
+      "wrong_answer": 96,
+      "invalid-output-format": 24
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 87,
+    "format_errors": 0,
+    "wrong_answers": 342,
+    "execution_errors": 0,
+    "total_failures": 87
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ],
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ],
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 123
+}

@@ -55,8 +55,17 @@ class Benchmark:
         cache_path: str | None = None,
         max_workers: int | None = None,
         raw_output_log_path: str | None = "temp_eval/raw_outputs.jsonl",
+        domain_filter: str | None = None,
     ) -> dict:
         selected = stratified_sample(self.samples, mode=mode, seed=self.seed)
+        
+        # Apply domain filter if specified
+        if domain_filter:
+            selected = [s for s in selected if s.domain == domain_filter]
+            if not selected:
+                raise ValueError(f"No samples found for domain: {domain_filter}")
+            logger.info("Applied domain filter: %s", domain_filter)
+        
         logger.info("Running benchmark on %s samples in mode=%s", len(selected), mode)
 
         per_domain_ds: dict[str, set[str]] = defaultdict(set)

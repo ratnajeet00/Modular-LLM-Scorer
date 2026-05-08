@@ -1,0 +1,212 @@
+{
+  "model": "local:llama3.1:8b",
+  "mode": "quick",
+  "accuracy": 0.252,
+  "per_dataset": {
+    "gsm8k_main": 0.190476,
+    "gsm8k_socratic": 0.112903,
+    "mbpp_full": 0.428571,
+    "mbpp_sanitized": 0.612903,
+    "natural_questions": 0.079365,
+    "proofwriter": 0.285714,
+    "reclor": 0.16129,
+    "squad": 0.145161
+  },
+  "per_domain": {
+    "code": 0.52,
+    "knowledge": 0.112,
+    "logic": 0.224,
+    "math": 0.152
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 26.577,
+      "min_seconds": 3.121,
+      "max_seconds": 98.155,
+      "total_seconds": 3242.438,
+      "sample_count": 122
+    },
+    "knowledge": {
+      "mean_seconds": 5.319,
+      "min_seconds": 0.599,
+      "max_seconds": 41.364,
+      "total_seconds": 664.897,
+      "sample_count": 125
+    },
+    "logic": {
+      "mean_seconds": 4.754,
+      "min_seconds": 0.402,
+      "max_seconds": 24.888,
+      "total_seconds": 589.44,
+      "sample_count": 124
+    },
+    "math": {
+      "mean_seconds": 5.383,
+      "min_seconds": 0.414,
+      "max_seconds": 26.72,
+      "total_seconds": 667.473,
+      "sample_count": 124
+    }
+  },
+  "final_score": 0.2112,
+  "total_questions": 500,
+  "correct_count": 126,
+  "wrong_count": 374,
+  "error_rate": 0.748,
+  "failure_rate": 0.12,
+  "non_empty_predictions": 440,
+  "empty_predictions": 60,
+  "call_error_count": 60,
+  "call_error_examples": [
+    "execution-error:name 'np' is not defined",
+    "execution-error:test-failed",
+    "execution-error:invalid literal for int() with base 10: '-'",
+    "execution-error:'list' object has no attribute 'split'",
+    "execution-error:name 'statistics' is not defined"
+  ],
+  "error_count": 748,
+  "error_examples": [
+    "execution-error:name 'np' is not defined",
+    "wrong_answer",
+    "execution-error:test-failed",
+    "execution-error:invalid literal for int() with base 10: '-'",
+    "invalid-output-format"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 336,
+      "correct": 106,
+      "accuracy": 0.315476
+    },
+    "medium": {
+      "count": 127,
+      "correct": 17,
+      "accuracy": 0.133858
+    },
+    "hard": {
+      "count": 37,
+      "correct": 3,
+      "accuracy": 0.081081
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.252,
+    "overall_samples": 500,
+    "overall_correct": 126,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.52,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.078
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.112,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.0392
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.224,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.056
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.152,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.038
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "execution-error:test-failed": 36,
+      "execution-error:name 'np' is not defined": 6,
+      "execution-error:name 'Counter' is not defined": 3,
+      "execution-error:'int' object is not iterable": 2,
+      "execution-error:list index out of range": 2,
+      "execution-error:invalid literal for int() with base 10: '-'": 1,
+      "execution-error:'list' object has no attribute 'split'": 1,
+      "execution-error:name 'statistics' is not defined": 1,
+      "execution-error:list indices must be integers or slices, not str": 1,
+      "execution-error:int() can't convert non-string with explicit base": 1,
+      "execution-error:name 'datetime' is not defined": 1,
+      "execution-error:'name'": 1,
+      "execution-error:'list' object has no attribute 'nlargest'": 1,
+      "execution-error:power_of_number() takes 1 positional argument but 2 were given": 1,
+      "execution-error:[1, 2] is not in list": 1,
+      "execution-error:unsupported operand type(s) for +: 'int' and 'tuple'": 1
+    },
+    "knowledge": {
+      "wrong_answer": 107,
+      "invalid-output-format": 4
+    },
+    "logic": {
+      "wrong_answer": 97
+    },
+    "math": {
+      "wrong_answer": 106
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 60,
+    "format_errors": 0,
+    "wrong_answers": 314,
+    "execution_errors": 0,
+    "total_failures": 60
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ],
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 7
+}

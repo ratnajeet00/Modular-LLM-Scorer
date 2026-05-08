@@ -1,0 +1,210 @@
+{
+  "model": "local:llama3.1:8b",
+  "mode": "quick",
+  "accuracy": 0.286,
+  "per_dataset": {
+    "gsm8k_main": 0.15873,
+    "gsm8k_socratic": 0.145161,
+    "mbpp_full": 0.396825,
+    "mbpp_sanitized": 0.725806,
+    "natural_questions": 0.222222,
+    "proofwriter": 0.238095,
+    "reclor": 0.145161,
+    "squad": 0.258065
+  },
+  "per_domain": {
+    "code": 0.56,
+    "knowledge": 0.24,
+    "logic": 0.192,
+    "math": 0.152
+  },
+  "per_domain_timing": {
+    "code": {
+      "mean_seconds": 29.405,
+      "min_seconds": 2.923,
+      "max_seconds": 139.393,
+      "total_seconds": 3116.969,
+      "sample_count": 106
+    },
+    "knowledge": {
+      "mean_seconds": 7.963,
+      "min_seconds": 0.668,
+      "max_seconds": 54.249,
+      "total_seconds": 891.825,
+      "sample_count": 112
+    },
+    "logic": {
+      "mean_seconds": 6.338,
+      "min_seconds": 0.377,
+      "max_seconds": 34.088,
+      "total_seconds": 716.206,
+      "sample_count": 113
+    },
+    "math": {
+      "mean_seconds": 5.443,
+      "min_seconds": 0.417,
+      "max_seconds": 26.791,
+      "total_seconds": 658.577,
+      "sample_count": 121
+    }
+  },
+  "final_score": 0.254,
+  "total_questions": 500,
+  "correct_count": 143,
+  "wrong_count": 357,
+  "error_rate": 0.714,
+  "failure_rate": 0.11,
+  "non_empty_predictions": 445,
+  "empty_predictions": 55,
+  "call_error_count": 55,
+  "call_error_examples": [
+    "execution-error:test-failed",
+    "execution-error:cannot access local variable 'inversions' where it is not associated with a value",
+    "execution-error:name 'cmath' is not defined",
+    "execution-error:'list' object has no attribute 'split'",
+    "invalid-output-format"
+  ],
+  "error_count": 714,
+  "error_examples": [
+    "wrong_answer",
+    "execution-error:test-failed",
+    "execution-error:cannot access local variable 'inversions' where it is not associated with a value",
+    "execution-error:name 'cmath' is not defined",
+    "execution-error:'list' object has no attribute 'split'"
+  ],
+  "cost": 0.0,
+  "difficulty_breakdown": {
+    "easy": {
+      "count": 337,
+      "correct": 115,
+      "accuracy": 0.341246
+    },
+    "medium": {
+      "count": 126,
+      "correct": 20,
+      "accuracy": 0.15873
+    },
+    "hard": {
+      "count": 37,
+      "correct": 8,
+      "accuracy": 0.216216
+    }
+  },
+  "summary_table": {
+    "overall_accuracy": 0.286,
+    "overall_samples": 500,
+    "overall_correct": 143,
+    "domain_breakdown": [
+      {
+        "domain": "code",
+        "accuracy": 0.56,
+        "sample_count": 125,
+        "weight": 0.15,
+        "weighted_score": 0.084
+      },
+      {
+        "domain": "knowledge",
+        "accuracy": 0.24,
+        "sample_count": 125,
+        "weight": 0.35,
+        "weighted_score": 0.084
+      },
+      {
+        "domain": "logic",
+        "accuracy": 0.192,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.048
+      },
+      {
+        "domain": "math",
+        "accuracy": 0.152,
+        "sample_count": 125,
+        "weight": 0.25,
+        "weighted_score": 0.038
+      }
+    ]
+  },
+  "per_domain_errors": {
+    "code": {
+      "execution-error:test-failed": 38,
+      "execution-error:name 'cmath' is not defined": 3,
+      "execution-error:name 'Counter' is not defined": 2,
+      "execution-error:name 'np' is not defined": 2,
+      "execution-error:cannot access local variable 'inversions' where it is not associated with a value": 1,
+      "execution-error:'list' object has no attribute 'split'": 1,
+      "invalid-output-format": 1,
+      "execution-error:name 'colorsys' is not defined": 1,
+      "execution-error:unsupported operand type(s) for %: 'list' and 'int'": 1,
+      "execution-error:name 'deque' is not defined": 1,
+      "execution-error:unsupported operand type(s) for +: 'int' and 'tuple'": 1,
+      "execution-error:can only concatenate str (not \"int\") to str": 1,
+      "execution-error:parabola_directrix() takes 2 positional arguments but 3 were given": 1,
+      "execution-error:name 'calendar' is not defined": 1
+    },
+    "knowledge": {
+      "wrong_answer": 93,
+      "invalid-output-format": 2
+    },
+    "logic": {
+      "wrong_answer": 101
+    },
+    "math": {
+      "wrong_answer": 106
+    }
+  },
+  "failure_breakdown": {
+    "generation_failures": 55,
+    "format_errors": 0,
+    "wrong_answers": 302,
+    "execution_errors": 0,
+    "total_failures": 55
+  },
+  "git_commit_hash": "ff5c5f9ed17e7d06d429d9deee654306faf4da9f*",
+  "selected_datasets_by_domain": {
+    "math": [
+      "gsm8k_main",
+      "gsm8k_socratic"
+    ],
+    "code": [
+      "mbpp_full",
+      "mbpp_sanitized"
+    ],
+    "logic": [
+      "proofwriter",
+      "reclor"
+    ],
+    "knowledge": [
+      "natural_questions",
+      "squad"
+    ]
+  },
+  "token_usage": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_tokens": 0,
+    "by_domain": {
+      "code": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "knowledge": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "logic": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "math": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      }
+    }
+  },
+  "seed": 42
+}

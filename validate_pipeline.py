@@ -2,7 +2,7 @@
 """
 Validation pipeline for benchmark evaluator correctness.
 
-Tests the evaluator with 10 known Q&A pairs to verify it works correctly
+Tests the evaluator with 5 known Q&A cases to verify it works correctly
 before running expensive benchmarks.
 """
 
@@ -114,7 +114,7 @@ def test_evaluator() -> bool:
         correct_count = 0
         for pred in case["correct_predictions"]:
             total_tests += 1
-            correct, error = evaluate_answer(sample, pred)
+            correct, error, _ = evaluate_answer(sample, pred)
             if correct:
                 correct_count += 1
                 passed_tests += 1
@@ -128,7 +128,7 @@ def test_evaluator() -> bool:
         wrong_correct_count = 0
         for pred in case["wrong_predictions"]:
             total_tests += 1
-            correct, error = evaluate_answer(sample, pred)
+            correct, error, _ = evaluate_answer(sample, pred)
             if not correct:
                 wrong_correct_count += 1
                 passed_tests += 1
