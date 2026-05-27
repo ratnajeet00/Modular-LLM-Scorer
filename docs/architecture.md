@@ -1,146 +1,225 @@
 # Architecture
 
-## High-level design
+## High-Level Design
 
-The system is a **production-ready benchmarking pipeline** with statistical rigor and security features:
+Modular LLM Scorer is a **production-ready benchmarking pipeline** with deterministic evaluation, statistical rigor, and multi-layer security:
 
-- data ingestion/normalization
-- stratified sampling with determinism
-- domain-specific prompting with refusal prevention
-- rule-based evaluation with sandboxed code execution
-- statistical scoring with 95% confidence intervals
-- comprehensive analysis and reporting tools
+1. Dataset ingestion and multi-format normalization
+2. Deterministic stratified sampling with configurable seeds
+3. Domain-specific prompting with refusal prevention
+4. Rule-based evaluation with sandboxed code execution
+5. Statistical scoring with 95% Wilson score confidence intervals
+6. Comprehensive analysis, comparison, and reporting tools
 
-No AI-based evaluator is used for grading; all evaluation is deterministic.
+All grading is deterministic — no LLM-as-judge is used.
 
-## Component diagram
+---
+
+## Component Diagram
 
 ```mermaid
 flowchart TD
-    A[Dataset root: data/raw_datasets] --> B[DatasetValidator]
+    A["Dataset root: data/raw_datasets"] --> B[DatasetValidator]
     B --> C[DatasetNormalizer]
-    C --> D[NormalizedSample list]
-    D --> E[Sampler]
-    E --> F[Selected samples]
+    C --> D["NormalizedSample list"]
+    D --> E["Sampler (stratified, seeded)"]
+    E --> F["Selected samples (top-2 datasets per domain)"]
     F --> G[PromptBuilder]
-    G --> H[Model Adapter]
+    G --> H["Model Adapter (8 providers)"]
     H --> I[Prediction]
-    I --> J[Rule Evaluator]
-    J -.->|Code| K[Sandboxed Executor]
-    K --> L[EvalRecord list]
-    L --> M[Scorer]
-    M --> N[Results JSON + CIs]
+    I --> J["Rule Evaluator (domain-specific)"]
+    J --->|Code domain| K["Sandboxed Executor (subprocess + timeout)"]
+    K --> L["EvalRecord list"]
+    J --> L
+    L --> M["Scorer (accuracy + Wilson CIs)"]
+    M --> N["Results JSON + JSONL log"]
     N --> O[Report Generator]
     O --> P[Markdown Report]
 ```
 
-## Runtime entrypoints
+---
 
-- Programmatic API: `Benchmark` class in `benchmark_lib/benchmark.py`
-- CLI: `run_benchmark.py` (with --compare, --dry-run support)
-- Analysis tools: `analyze_errors.py`, `save_sample_list.py`, `mcnemar_test.py`, `generate_report.py`, `validate_pipeline.py`
+## Runtime Entrypoints
 
-## Package structure
+- **CLI**: `run_benchmark.py` — main benchmark runner with `--compare`, `--dry-run`, `--domain` support
+- **Programmatic API**: `Benchmark` class in `benchmark_lib/benchmark.py`
+- **Analysis tools**: `analyze_errors.py`, `save_sample_list.py`, `mcnemar_test.py`, `generate_report.py`, `validate_pipeline.py`
 
-### Core Benchmark Engine
-- `benchmark_lib/dataset`
-  : Validation, parsing, normalization, and difficulty tagging
-  - `validator.py` - Dataset folder and structure validation
-  - `normalizer.py` - Mixed-format data loading (HF disk, CSV, JSON, riegeli)
-  - `difficulty.py` - Heuristic difficulty tagging
-- `benchmark_lib/engine`
-  : Sampling, prompting, inference, evaluation, and scoring
-  - `benchmark.py` - Main orchestration and pipeline
-  - `sampler.py` - Deterministic stratified sampling
-  - `prompt_builder.py` - Domain-specific prompt construction with refusal prevention
-  - `runner.py` - Inference loop with caching, retry, timing
-  - `evaluator.py` - Rule-based grading with F1 tuning and sandboxed execution
-  - `scorer.py` - Results aggregation with 95% Wilson score intervals
-  - `sandboxed_eval.py` - **NEW** Multi-layer code execution protection (pattern validation, subprocess isolation, timeout)
-- `benchmark_lib/models`
-  : Provider-agnostic model interface and concrete adapters
-  - `base_model.py` - Abstract base class for all models
-  - `_rate_limit.py` - Rate limiting utilities
-  - `openai_model.py` - OpenAI API adapter
-  - `openrouter_model.py` - OpenRouter API adapter
-  - `local_model.py` - Local OpenAI-compatible endpoints (Ollama)
-  - `huggingface_model.py` - Hugging Face models (local + Inference API)
-  - `gemini_model.py` - Google Gemini API adapter
-  - `together_model.py` - Together API adapter
-  - `groq_model.py` - Groq with local throttling
-- `benchmark_lib/utils`
-  : Cache, logger setup, and shared dataclasses
-  - `types.py` - Data classes (NormalizedSample, EvalRecord)
-  - `cache.py` - Prompt response caching with validation
-  - `logging.py` - Logger configuration
+---
 
-### Analysis & Reporting Utilities
-- `analyze_errors.py` - **NEW** Error categorization into 8 types
-- `generate_report.py` - **NEW** Markdown report generation with per-domain breakdown
-- `save_sample_list.py` - **NEW** Sample extraction with metadata
-- `mcnemar_test.py` - **NEW** Statistical significance testing for model comparison
-- `validate_pipeline.py` - **NEW** Evaluator correctness testing (43/43 tests passing)
+## Package Structure
 
-## Primary data contracts
+### `benchmark_lib/dataset/` — Validation, Normalization, Difficulty
 
-- `NormalizedSample`
-  : Canonical benchmark sample used by the pipeline
-  - Includes: id, question, expected, dataset, domain, difficulty
-- `EvalRecord`
-  : Captures per-question evaluation details
-  - Includes: prediction, correctness, error, elapsed_seconds, tokens, prompt text
-- `BenchmarkResult`
-  : Final aggregated results with statistics
-  - Includes: accuracy per domain, weighted final score, 95% CIs, error breakdown, timing metrics
+| File | Responsibility |
+|---|---|
+| `validator.py` | Checks dataset root path; warns on unknown/missing folders; lists supported dataset names |
+| `normalizer.py` | Loads HF disk datasets, JSON, JSONL, CSV, SQuAD v2 JSON → produces `NormalizedSample` objects |
+| `difficulty.py` | Tags each sample `easy` / `medium` / `hard` using domain-specific heuristics |
 
-Defined in `benchmark_lib/utils/types.py`.
+### `benchmark_lib/engine/` — Sampling, Prompting, Inference, Evaluation, Scoring
 
-## Determinism strategy
+| File | Responsibility |
+|---|---|
+| `benchmark.py` | Orchestrates the full pipeline end-to-end |
+| `sampler.py` | Deterministic stratified sampling — top-2 datasets per domain, difficulty ratios |
+| `prompt_builder.py` | Domain-specific prompt templates with refusal-blocking system instructions |
+| `runner.py` | Inference loop — SHA-256 cache, retry with backoff, timing, JSONL logging |
+| `evaluator.py` | Rule-based graders for math, logic, knowledge, and code; refusal detection |
+| `scorer.py` | Aggregates `EvalRecord` list → JSON results with CIs, error breakdown, timing |
+| `sandboxed_eval.py` | Multi-layer code execution safety (pattern validation, subprocess isolation, timeout) |
 
-- Deterministic RNG seeding in sampler (configurable via --seed/--seeds)
-- Explicit mode sizes (quick=10%, half=50%, full=100%)
-- Explicit domain weights (math=0.25, logic=0.25, knowledge=0.35, code=0.15)
-- Fixed difficulty ratio targets (easy:medium:hard = roughly 40:40:20)
-- Deterministic non-LLM evaluation logic with bounded normalization rules
-- Reproducible prompt text (stored in JSONL for verification)
+### `benchmark_lib/models/` — Provider-Agnostic Model Interface
+
+| File | Provider |
+|---|---|
+| `base_model.py` | Abstract base: `generate(prompt, max_tokens) -> str`, optional `get_last_cost()` |
+| `openai_model.py` | OpenAI chat completions |
+| `openrouter_model.py` | OpenRouter chat completions; retries on token-pressure errors |
+| `local_model.py` | OpenAI-compatible local endpoint + Ollama-native `/api/chat` fallback |
+| `huggingface_model.py` | Local `transformers` or HF Inference API; auto-fallback to chat completions |
+| `gemini_model.py` | Google Gemini; endpoint probe + preflight model check |
+| `together_model.py` | Together AI; retry/backoff |
+| `groq_model.py` | Groq; local RPM/TPM rate window throttling |
+| `_rate_limit.py` | Shared rate-limiting utilities |
+
+### `benchmark_lib/utils/` — Shared Utilities
+
+| File | Responsibility |
+|---|---|
+| `types.py` | `NormalizedSample` and `EvalRecord` dataclasses |
+| `cache.py` | SHA-256 prompt → response cache; stale entries are re-validated before reuse |
+| `logging.py` | Logger setup (INFO level, timestamp/name formatting) |
+
+### Top-Level Analysis & Reporting Scripts
+
+| File | Purpose |
+|---|---|
+| `run_benchmark.py` | CLI entry point — benchmark, compare, dry-run, multi-seed aggregation |
+| `analyze_errors.py` | Categorizes failures from JSONL into 8 error types; per-domain frequency table |
+| `generate_report.py` | Markdown report with domain breakdown, timing, CIs, and executive summary |
+| `save_sample_list.py` | Extracts evaluated samples from JSONL with full metadata |
+| `mcnemar_test.py` | Standalone McNemar's chi-squared test from two JSONL logs |
+| `validate_pipeline.py` | Evaluator correctness test suite: 43 test cases, 100% pass rate |
+
+---
+
+## Primary Data Contracts
+
+### `NormalizedSample` (`benchmark_lib/utils/types.py`)
+
+Canonical benchmark sample produced by the normalizer and consumed by the pipeline:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `str` | Unique identifier (`{dataset}-{index}`) |
+| `dataset` | `str` | Source dataset name (e.g. `gsm8k_main`) |
+| `domain` | `str` | `math`, `logic`, `knowledge`, or `code` |
+| `question` | `str` | The prompt/question text |
+| `answer` | `str` | Ground-truth answer |
+| `options` | `list[str] \| None` | MCQ options (logic domain) |
+| `difficulty` | `str` | `easy`, `medium`, or `hard` |
+| `metadata` | `dict` | Domain-specific extras (aliases, test cases, entry_point, etc.) |
+
+### `EvalRecord` (`benchmark_lib/utils/types.py`)
+
+Per-sample evaluation result produced by the runner:
+
+| Field | Type | Description |
+|---|---|---|
+| `sample_id` | `str` | Matches `NormalizedSample.id` |
+| `dataset` | `str` | Source dataset |
+| `domain` | `str` | Domain |
+| `difficulty` | `str` | Difficulty tier |
+| `prompt` | `str` | Full prompt sent to the model |
+| `prediction` | `str` | Raw model output |
+| `expected` | `str` | Ground-truth answer |
+| `correct` | `bool` | Whether prediction is correct |
+| `error` | `str \| None` | Error message or error code if failed |
+| `error_type` | `str \| None` | Structured type: `generation_failure`, `format_error`, `wrong_answer`, `execution_error` |
+| `cost` | `float` | API cost (where available) |
+| `elapsed_seconds` | `float` | Inference time in seconds |
+| `input_tokens` | `int` | Input token count |
+| `output_tokens` | `int` | Output token count |
+
+---
+
+## Determinism Strategy
+
+- **Seeded RNG**: configurable via `--seed` / `--seeds`
+- **Explicit mode sizes**: `quick`=500, `half`=1500, `full`=6000
+- **Explicit domain weights**: math=0.25, logic=0.25, knowledge=0.35, code=0.15
+- **Fixed difficulty ratios**: 30% easy / 50% medium / 20% hard (best-effort within each dataset)
+- **Top-2 dataset selection**: ranked by descending sample count; tie-breaker = dataset name
+- **Deterministic evaluation**: no LLM grading; all rules are bounded and reproducible
+- **Prompt logging**: full prompt text stored in JSONL for audit and replication
+
+---
 
 ## Statistical Methods
 
-### Confidence Intervals
-- **Wilson Score** method for 95% CIs
-- Computed per: domain, difficulty tier, dataset
-- Equation: `(p + z²/2n) ± z√(p(1-p)/n + z²/4n²) / (1 + z²/n)`
-  - p = accuracy, n = sample count, z = 1.96 (95% confidence)
+### Confidence Intervals — Wilson Score
 
-### Model Comparison
-- **McNemar's Test** for paired samples
-- Chi-squared statistic: `(|b-c|-1)² / (b+c)`
-  - b = disagreements favoring Model 1, c = disagreements favoring Model 2
-- P-value significance at α=0.05
+Applied per domain, difficulty tier, and dataset:
+
+$$\text{CI}_{95\%} = \frac{\hat{p} + \frac{z^2}{2n} \pm z\sqrt{\frac{\hat{p}(1-\hat{p})}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$
+
+- $\hat{p}$ = accuracy (proportion correct)
+- $n$ = sample count
+- $z = 1.96$ (95% confidence level)
+- Handles edge cases (0% and 100% accuracy) correctly, unlike the normal approximation
+
+**Implementation**: `benchmark_lib/engine/scorer.py` via `scipy.stats.proportion_confint(method='wilson')`
+
+### McNemar's Test — Model Comparison
+
+For paired evaluation on the same sample set:
+
+$$\chi^2 = \frac{(|b - c| - 1)^2}{b + c}$$
+
+- $b$ = samples where Model 1 is correct and Model 2 is wrong
+- $c$ = samples where Model 2 is correct and Model 1 is wrong
+- Significance threshold: $\alpha = 0.05$; requires ≥25 disagreements for reliable results
+
+**Implementation**: `mcnemar_test.py` (standalone) and `run_benchmark.py --compare` (integrated)
+
+---
 
 ## Domain Model
 
-Supported domains:
+| Domain | Weight | Datasets |
+|---|---|---|
+| **Math** | 25% | `gsm8k_main`, `gsm8k_socratic`, `hendrycks_math_*`, `svamp` |
+| **Logic** | 25% | `proofwriter`, `reclor` |
+| **Knowledge** | 35% | `squad`, `natural_questions`, `trivia_qa` |
+| **Code** | 15% | `openai_humaneval`, `mbpp_full`, `mbpp_sanitized` |
 
-- **Math** (25% weight): GSM8K, MATHÉ, SVAMP
-- **Logic** (25% weight): Reclor, ProofWriter
-- **Knowledge** (35% weight): SQuAD, NQ, TriviaQA
-- **Code** (15% weight): MBPP, HumanEval
+**Final score formula**:
+```
+final_score = Σ (domain_accuracy[d] × domain_weight[d])
+              for d in {math, logic, knowledge, code}
+```
 
-Final score formula:
-```
-score = Σ(domain_accuracy[d] × domain_weight[d]) for d in {math, logic, knowledge, code}
-```
+---
 
 ## Security & Sandboxing
 
-### Code Execution Protection (3 layers)
-1. **Pattern validation** - Blocks exec, eval, file ops, system commands
-2. **Subprocess isolation** - Code runs in separate process with timeout
-3. **Configurable limits** - Output truncation, token limits, memory bounds
+### Code Execution — 3-Layer Protection
+
+1. **Pattern validation** (`validate_code_safety`) — blocks `exec`, `eval`, `open`, file operations, `os.system`, `subprocess` imports, and shell commands before execution
+2. **Subprocess isolation** — candidate code runs in a separate `subprocess.run()` process, not in the main Python process
+3. **Configurable timeout** — default 10 seconds per test run; exceeded runs return `code-timeout` error
 
 ### Implementation
-- File: `benchmark_lib/engine/sandboxed_eval.py`
-- Sandboxed execution is enabled by default; optional strict mode adds extra restrictions
-- Timeout handling with graceful degradation
 
+- File: `benchmark_lib/engine/sandboxed_eval.py`
+- Called from: `benchmark_lib/engine/evaluator.py` when `ENABLE_SANDBOXED_EVAL = True`
+- `SANDBOX_STRICT_MODE = False` (default): standard restrictions
+- `SANDBOX_STRICT_MODE = True`: additional restriction layer for tighter security
+- Timeout handling with graceful `code-timeout` error (does not crash the pipeline)
+
+### Limitations
+
+- Pattern-based, not bytecode-level (unlike RestrictedPython)
+- Subprocess isolation prevents parent process compromise but not all resource exhaustion
+- See [Limitations and Notes](./limitations-and-notes.md) for details

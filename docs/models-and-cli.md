@@ -1,194 +1,284 @@
 # Models and CLI
 
-## Model interface
+## Model Interface
 
-Base abstraction: `benchmark_lib/models/base_model.py`
+All model adapters extend `BaseModel` in `benchmark_lib/models/base_model.py`.
 
-- Required: `generate(prompt: str, max_tokens: int | None = None) -> str`
-- Optional: `get_last_cost() -> float`
+**Required method**:
+```python
+def generate(self, prompt: str, max_tokens: int | None = None) -> str:
+    ...
+```
 
-All adapters run with `temperature=0.2` and accept domain/token limits from the runner.
+**Optional method**:
+```python
+def get_last_cost(self) -> float:
+    return 0.0
+```
 
-## Implemented adapters
+All adapters run at `temperature=0.2` by default and accept domain-specific `max_tokens` limits from the runner.
 
-### OpenAI
+---
 
-File: `benchmark_lib/models/openai_model.py`
-
-- requires `OPENAI_API_KEY`
-- chat completions
-
-### OpenRouter
-
-File: `benchmark_lib/models/openrouter_model.py`
-
-- requires `OPENROUTER_API_KEY`
-- chat completions over HTTP
-- retries token-pressure errors by reducing `max_tokens`
-
-### Local (OpenAI-compatible + Ollama-native fallback)
-
-File: `benchmark_lib/models/local_model.py`
-
-- supports OpenAI-style local endpoints and native Ollama fallback
-- default URL: `http://localhost:11434/v1`
-- falls back to `/api/chat` when OpenAI route is unavailable
-- **automatic optimizations**:
-  - no timeout enforcement - models run to completion
-  - increases retries to 3
-  - caps batch size at 4 for stability
-
-### Hugging Face
-
-File: `benchmark_lib/models/huggingface_model.py`
-
-- local transformers mode (`--hf-device cpu|cuda|mps`)
-- Inference API mode (`--hf-use-inference-api`)
-- automatic fallback to chat completions for providers that do not support `text_generation`
-
-### Gemini
-
-File: `benchmark_lib/models/gemini_model.py`
-
-- requires `GEMINI_API_KEY`
-- endpoint probe and retry behavior for stable/preview API versions
-
-### Together
-
-File: `benchmark_lib/models/together_model.py`
-
-- requires `TOGETHER_API_KEY`
-- OpenAI-compatible chat completions with retry/backoff
-
-### Groq
-
-File: `benchmark_lib/models/groq_model.py`
-
-- requires `GROQ_API_KEY`
-- local throttling to enforce rate windows
-  - `GROQ_RPM_LIMIT` (default 30)
-  - `GROQ_TPM_LIMIT` (default 6000)
-
-## CLI
-
-Entrypoint: `run_benchmark.py`
-
-### Main args
-
-- `--dataset-path` (default `data/raw_datasets`)
-- `--model` (`echo`, `openai`, `openrouter`, `local`, `huggingface`, `gemini`, `together`, `groq`)
-- `--model-name` (explicit model id)
-- `--mode` (`quick`, `half`, `full`)
-- `--seed` / `--seeds` (single seed or CSV-separated list for multiple runs)
-- `--batch-size` (default 4)
-- `--max-workers` (default 8)
-- `--timeout-seconds` (DISABLED - models run without time limits, argument accepted for backward compatibility)
-- `--retries` (default 2)
-- `--raw-output-log` (outputs include `elapsed_seconds` per sample, plus question/prediction/error)
-- `--env-file` (default `.env`)
-- local/HF specific args (`--local-base-url`, `--local-api-key`, `--hf-api-token`, `--hf-use-inference-api`, `--hf-device`)
-
-### Analysis & Comparison Args (NEW)
-
-- `--dry-run` - **Preview sample selection without API calls** (useful for verifying sampling strategy)
-- `--compare` - **Side-by-side model comparison with McNemar's test**
-  - Usage: `python run_benchmark.py --compare result1.json result2.json`
-  - Outputs: Accuracy delta, p-value, significance interpretation
-
-## Provider testing commands (3 per provider)
+## Implemented Adapters
 
 ### OpenAI
+
+**File**: `benchmark_lib/models/openai_model.py`  
+**Env var**: `OPENAI_API_KEY`  
+**Protocol**: OpenAI chat completions  
+**Usage**:
 
 ```powershell
 python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick
-python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick --max-workers 2 --seed 7
-python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick --raw-output-log temp_eval/openai_quick.jsonl
+python run_benchmark.py --model openai --model-name gpt-4o --mode quick --max-workers 2
+python run_benchmark.py --model openai --model-name gpt-4o-mini --mode quick \
+    --raw-output-log temp_eval/openai_quick.jsonl
 ```
+
+---
 
 ### OpenRouter
 
+**File**: `benchmark_lib/models/openrouter_model.py`  
+**Env var**: `OPENROUTER_API_KEY`  
+**Protocol**: OpenAI-compatible chat completions over HTTPS  
+**Special behavior**: Automatically retries with reduced `max_tokens` on token-pressure errors  
+**Usage**:
+
 ```powershell
 python run_benchmark.py --model openrouter --model-name openai/gpt-4o-mini --mode quick
-python run_benchmark.py --model openrouter --model-name anthropic/claude-3.5-sonnet --mode quick --max-workers 2
-python run_benchmark.py --model openrouter --model-name openai/gpt-4o-mini --mode quick --raw-output-log temp_eval/openrouter_quick.jsonl
+python run_benchmark.py --model openrouter --model-name anthropic/claude-3.5-sonnet --mode quick
+python run_benchmark.py --model openrouter --model-name openai/gpt-4o-mini --mode quick \
+    --raw-output-log temp_eval/openrouter_quick.jsonl
 ```
 
-### Local
+---
+
+### Local (Ollama / OpenAI-compatible)
+
+**File**: `benchmark_lib/models/local_model.py`  
+**Env var**: `LOCAL_BASE_URL` (default `http://localhost:11434/v1`), `LOCAL_API_KEY` (optional)  
+**Protocol**:
+- Primary: OpenAI-compatible `POST /v1/chat/completions`
+- Fallback: Ollama-native `POST /api/chat`
+
+**Automatic optimizations** for local models:
+- No timeout enforcement (models run to completion)
+- Retries increased to 3
+- Batch size capped at 4 for stability
+
+**Usage**:
 
 ```powershell
-python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434/v1 --mode quick
-python run_benchmark.py --model local --model-name llama3.1:8b --local-base-url http://localhost:11434 --mode quick
-python run_benchmark.py --model local --model-name llama3.1:8b --mode quick --max-workers 1 --raw-output-log temp_eval/local_quick.jsonl
+python run_benchmark.py --model local --model-name llama3.1:8b --mode quick
+python run_benchmark.py --model local --model-name deepseek-coder:6.7b --mode half --seed 42
+python run_benchmark.py --model local --model-name mistral:7b-instruct --mode quick \
+    --max-workers 1 --raw-output-log temp_eval/local_quick.jsonl
 ```
+
+> **Tip**: Use the exact model tag from `ollama list` (e.g. `llama3.1:8b`, not `llama3.1`).
+
+---
 
 ### Hugging Face
 
+**File**: `benchmark_lib/models/huggingface_model.py`  
+**Env vars**: `HF_API_TOKEN`, `HF_USE_INFERENCE_API`, `HF_DEVICE`  
+**Modes**:
+- **Local** (`--hf-device cpu|cuda|mps`): runs the model locally using `transformers`
+- **Inference API** (`--hf-use-inference-api`): calls the HF cloud API
+
+**Special behavior**: Automatically falls back to chat completions for providers that don't support `text_generation`.
+
+**Usage**:
+
 ```powershell
-python run_benchmark.py --model huggingface --model-name meta-llama/Llama-2-7b --hf-device cpu --mode quick
-python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --hf-use-inference-api --mode quick
-python run_benchmark.py --model huggingface --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --hf-use-inference-api --mode quick --raw-output-log temp_eval/hf_quick.jsonl
+python run_benchmark.py --model huggingface --model-name meta-llama/Llama-2-7b \
+    --hf-device cpu --mode quick
+python run_benchmark.py --model huggingface \
+    --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B \
+    --hf-use-inference-api --mode quick
+python run_benchmark.py --model huggingface \
+    --model-name deepseek-ai/DeepSeek-R1-Distill-Qwen-7B \
+    --hf-use-inference-api --mode quick \
+    --raw-output-log temp_eval/hf_quick.jsonl
 ```
 
+---
+
 ### Gemini
+
+**File**: `benchmark_lib/models/gemini_model.py`  
+**Env var**: `GEMINI_API_KEY`  
+**Special behavior**: Runs a preflight model check before the benchmark starts; fails fast if the model or API key is invalid.
+
+**Usage**:
 
 ```powershell
 python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode quick
 python run_benchmark.py --model gemini --model-name gemini-1.5-flash --mode quick --max-workers 2
-python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode quick --raw-output-log temp_eval/gemini_quick.jsonl
+python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode full \
+    --raw-output-log temp_eval/gemini_full.jsonl
 ```
 
-### Together
+---
+
+### Together AI
+
+**File**: `benchmark_lib/models/together_model.py`  
+**Env var**: `TOGETHER_API_KEY`  
+**Protocol**: OpenAI-compatible chat completions with retry/backoff  
+**Default model**: `mistralai/Mistral-7B-Instruct-v0.3`
+
+**Usage**:
 
 ```powershell
-python run_benchmark.py --model together --model-name mistralai/Mistral-7B-Instruct-v0.3 --mode quick
-python run_benchmark.py --model together --model-name meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo --mode quick --max-workers 2
-python run_benchmark.py --model together --model-name mistralai/Mistral-7B-Instruct-v0.3 --mode quick --raw-output-log temp_eval/together_quick.jsonl
+python run_benchmark.py --model together \
+    --model-name mistralai/Mistral-7B-Instruct-v0.3 --mode quick
+python run_benchmark.py --model together \
+    --model-name meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo --mode quick --max-workers 2
+python run_benchmark.py --model together \
+    --model-name mistralai/Mistral-7B-Instruct-v0.3 --mode quick \
+    --raw-output-log temp_eval/together_quick.jsonl
 ```
+
+---
 
 ### Groq
 
+**File**: `benchmark_lib/models/groq_model.py`  
+**Env vars**: `GROQ_API_KEY`, `GROQ_RPM_LIMIT` (default 30), `GROQ_TPM_LIMIT` (default 6000)  
+**Special behavior**: Local sliding-window rate throttling to stay within Groq's free tier limits.  
+**Default model**: `llama-3.1-8b-instant`
+
+**Usage**:
+
 ```powershell
-python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1
-python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1 --batch-size 2
-python run_benchmark.py --model groq --model-name llama-3.1-8b-instant --mode quick --max-workers 1 --raw-output-log temp_eval/groq_quick.jsonl
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant \
+    --mode quick --max-workers 1
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant \
+    --mode quick --max-workers 1 --batch-size 2
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant \
+    --mode quick --max-workers 1 \
+    --raw-output-log temp_eval/groq_quick.jsonl
 ```
 
-## Timing metrics
+---
 
-All benchmark runs include timing data collected throughout the inference pipeline:
+## CLI Reference
 
-- **Raw output (`--raw-output-log`)**: Each sample includes `elapsed_seconds` field tracking inference time
-- **Final results**: Includes `per_domain_timing` dictionary with aggregates per domain:
-  - `mean`: average seconds per sample
-  - `min`: minimum seconds seen
-  - `max`: maximum seconds seen
-  - `total`: cumulative seconds for all samples in domain
-  - `sample_count`: number of samples evaluated
+**Entrypoint**: `run_benchmark.py`
 
-Example results output:
+### Main Flags
+
+| Flag | Default | Description |
+|---|---|---|
+| `--dataset-path` | `data/raw_datasets` | Root dataset directory |
+| `--model` | `echo` | Provider name (see list above) |
+| `--model-name` | *(provider default)* | Exact model ID |
+| `--mode` | `half` | `quick` / `half` / `full` |
+| `--seed` | `42` | Single random seed |
+| `--seeds` | *(none)* | Comma-separated seeds for multi-run averaging |
+| `--domain` | *(all)* | Filter: `math`, `logic`, `knowledge`, `code` |
+| `--batch-size` | `8` | Samples per batch |
+| `--max-workers` | *(auto)* | Concurrent inference threads |
+| `--retries` | `2` | Retry attempts per failed sample |
+| `--timeout-seconds` | *(disabled)* | Accepted for compatibility; has no effect |
+| `--raw-output-log` | `temp_eval/raw_outputs.jsonl` | Per-sample JSONL log path |
+| `--env-file` | `.env` | Environment variable file |
+
+### Analysis & Comparison Flags
+
+| Flag | Description |
+|---|---|
+| `--dry-run` | Preview sample counts by domain + difficulty; no API calls |
+| `--compare R1 R2` | Side-by-side table of two result JSONs + McNemar's test |
+
+### Local / HF Flags
+
+| Flag | Default | Description |
+|---|---|---|
+| `--local-base-url` | `http://localhost:11434/v1` | Ollama / local endpoint URL |
+| `--local-api-key` | *(empty)* | Optional API key for local endpoint |
+| `--hf-api-token` | *(env)* | Hugging Face token |
+| `--hf-use-inference-api` | `false` | Use HF cloud API instead of local inference |
+| `--hf-device` | `cpu` | Local inference device: `cpu`, `cuda`, `mps` |
+
+---
+
+## Timing Metrics
+
+All benchmark runs include per-sample and per-domain timing data.
+
+### Per-Sample (in JSONL log)
+
+Each raw output record includes:
 ```json
-{
-  "per_domain_timing": {
-    "code": {
-      "mean": 4.23,
-      "min": 1.15,
-      "max": 8.92,
-      "total": 84.6,
-      "sample_count": 20
-    },
-    "math": {
-      "mean": 0.85,
-      "min": 0.21,
-      "max": 2.14,
-      "total": 17.0,
-      "sample_count": 20
-    }
+"elapsed_seconds": 0.48
+```
+
+### Per-Domain (in Results JSON)
+
+```json
+"per_domain_timing": {
+  "code": {
+    "mean_seconds": 4.23,
+    "min_seconds": 1.15,
+    "max_seconds": 8.92,
+    "total_seconds": 84.6,
+    "sample_count": 20
+  },
+  "math": {
+    "mean_seconds": 0.85,
+    "min_seconds": 0.21,
+    "max_seconds": 2.14,
+    "total_seconds": 17.0,
+    "sample_count": 20
   }
 }
 ```
 
-## Troubleshooting notes
+---
 
-- If dashboard usage looks missing, ensure shell key and `.env` key point to the same account.
-- Clear cache for live-call verification: remove `.benchmark_cache/prompt_cache.json`.
-- For local models, use exact tag from `ollama list`.
+## Adding a New Model Provider
+
+1. Create `benchmark_lib/models/my_provider.py`:
+
+```python
+from .base_model import BaseModel
+
+class MyModel(BaseModel):
+    model_name = "my-provider/model-id"
+
+    def generate(self, prompt: str, max_tokens: int | None = None) -> str:
+        # Call your API
+        return response_text
+
+    def get_last_cost(self) -> float:
+        return 0.0  # optional
+```
+
+2. Register it in `run_benchmark.py` inside `build_model()`:
+
+```python
+if name == "myprovider":
+    api_key = os.getenv("MY_API_KEY", "")
+    model_id = model_name_override or "default-model-id"
+    return MyModel(api_key=api_key, model=model_id)
+```
+
+3. Add `"myprovider"` to the `--model` choices list in `parser.add_argument`.
+
+---
+
+## Troubleshooting
+
+| Issue | Fix |
+|---|---|
+| API key not found | Check `.env` file and ensure the correct variable name |
+| Local model unavailable | Ensure `ollama serve` is running; verify tag with `ollama list` |
+| HF token error | Generate a new token at https://huggingface.co/settings/tokens |
+| Cache returning stale results | Delete `.benchmark_cache/prompt_cache.json` |
+| Groq rate limit errors | Reduce `--max-workers` to 1 and `--batch-size` to 2 |
+| Gemini preflight fails | Check `GEMINI_API_KEY` and that the model name exists |

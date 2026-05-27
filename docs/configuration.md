@@ -1,169 +1,289 @@
 # Configuration
 
-## Python and packaging
+## Python & Packaging
 
-Defined in `pyproject.toml`.
+Defined in `pyproject.toml`:
 
-Core dependency:
+- **Name**: `benchmark-lib`
+- **Version**: `0.1.0`
+- **Requires**: Python ≥ 3.10
 
-- `requests`
-- `scipy>=1.8.0` (required for statistical methods)
+### Core Dependencies
 
-Optional extras:
+| Package | Minimum Version | Purpose |
+|---|---|---|
+| `requests` | `>=2.31.0` | HTTP calls for OpenRouter, Together, Gemini |
+| `scipy` | `>=1.8.0` | Wilson score CIs and McNemar's test |
+| `groq` | `>=1.1.1` | Groq API client |
+| `google-genai` | `>=1.0.0` | Google Gemini client |
 
-- `datasets` extra:
-: `datasets`, `pyarrow`
-- `openai` extra:
-: `openai`
-- `groq` extra:
-: `groq`
+### Optional Extras
+
+| Extra | Packages | Install with |
+|---|---|---|
+| `datasets` | `datasets>=2.18.0`, `pyarrow>=14.0.0` | `pip install -e ".[datasets]"` |
+| `openai` | `openai>=1.30.0` | `pip install -e ".[openai]"` |
+| `groq` | `groq>=0.9.0` | Included in core |
 
 See `requirements.txt` for locked dependency versions.
 
-## Environment variables
+---
 
-The CLI can load variables from an env file (`--env-file`, default `.env`).
+## Environment Variables
 
-Example setup file is provided at `.env.example`.
+The CLI loads variables from `.env` (or the file specified by `--env-file`). Model names are **never** read from the environment — always pass them via `--model-name`.
 
 ### OpenAI
 
-- `OPENAI_API_KEY`
+```ini
+OPENAI_API_KEY=sk-...
+```
 
 ### OpenRouter
 
-- `OPENROUTER_API_KEY`
+```ini
+OPENROUTER_API_KEY=sk-or-...
+```
 
-### Gemini
+### Google Gemini
 
-- `GEMINI_API_KEY`
+```ini
+GEMINI_API_KEY=...
+```
 
-### Together
+### Together AI
 
-- `TOGETHER_API_KEY`
+```ini
+TOGETHER_API_KEY=...
+```
 
 ### Groq
 
-- `GROQ_API_KEY`
-- `GROQ_RPM_LIMIT` (default `30`)
-- `GROQ_TPM_LIMIT` (default `6000`)
+```ini
+GROQ_API_KEY=gsk_...
+GROQ_RPM_LIMIT=30      # Requests per minute (default 30)
+GROQ_TPM_LIMIT=6000    # Tokens per minute (default 6000)
+```
+
+Groq adapter enforces these limits locally via a sliding window. Provider quotas may still apply.
 
 ### Hugging Face
 
-- `HF_API_TOKEN` - API token from https://huggingface.co/settings/tokens (required for Inference API)
-- `HF_USE_INFERENCE_API` - Set to `true` to use cloud Inference API, `false` for local inference (default: `false`)
-- `HF_DEVICE` - Device for local inference: `cpu`, `cuda`, or `mps` (default: `cpu`)
+```ini
+HF_API_TOKEN=hf_...               # Required for Inference API; optional for local
+HF_USE_INFERENCE_API=false        # true = cloud API, false = local transformers
+HF_DEVICE=cpu                     # cpu | cuda | mps (for local inference)
+```
 
-### Local provider
+### Local / Ollama
 
-- `LOCAL_BASE_URL` (default: `http://localhost:11434/v1`)
-- `LOCAL_API_KEY` (optional)
+```ini
+LOCAL_BASE_URL=http://localhost:11434/v1  # OpenAI-compatible endpoint
+LOCAL_API_KEY=                            # Optional; leave empty for Ollama
+```
 
-Local adapter endpoint behavior:
-- tries OpenAI-compatible `chat/completions`
-- falls back to Ollama-native `/api/chat` when route is unavailable
+Local adapter behavior:
+- First tries OpenAI-compatible `POST /chat/completions`
+- Falls back to Ollama-native `POST /api/chat` if the route is unavailable
 
-Model names are not read from env. Select models only via CLI using `--model-name`.
+For Ollama, use the exact model tag shown in `ollama list` (e.g. `llama3.1:8b`, `deepseek-coder:6.7b`).
 
-For Ollama, use the exact installed tag from `ollama list` (for example, `llama3.1:8b`).
+---
 
 ## Feature Configuration
 
-### Sandboxed Code Evaluation (Production Safety)
-In `benchmark_lib/engine/evaluator.py`:
+These constants are in `benchmark_lib/engine/evaluator.py` and can be changed directly:
+
+### Sandboxed Code Evaluation
+
 ```python
-ENABLE_SANDBOXED_EVAL = True   # Sandbox protection is enabled by default
-SANDBOX_STRICT_MODE = False    # Set to True for maximum security (only allows basic operations)
+ENABLE_SANDBOXED_EVAL = True   # Enable sandbox safety check before code execution (default: True)
+SANDBOX_STRICT_MODE = False    # Set True for maximum restrictions (default: False)
 ```
+
+- `True` / `False`: enables/disables pattern-based safety validation before subprocess execution
+- `SANDBOX_STRICT_MODE = True`: adds additional restriction layer for tighter security
 
 ### Knowledge Evaluator F1 Threshold
-In `benchmark_lib/engine/evaluator.py`:
+
 ```python
-F1_THRESHOLD_KNOWLEDGE = 0.75  # Adjustable (default: 0.75, range: 0.0-1.0)
+F1_THRESHOLD_KNOWLEDGE = 0.75  # Token-overlap F1 acceptance threshold (default: 0.75)
 ```
-- Lower threshold: accepts more paraphrase variations
-- Higher threshold: stricter exact matching
+
+- Range: 0.0–1.0
+- Lower (e.g. 0.5): accepts more paraphrase variations
+- Higher (e.g. 0.9): stricter, closer to exact string matching
+- Reduced from 0.8 → 0.75 to improve partial-match acceptance
 
 ### Code Execution Timeout
-Configurable per invocation:
+
+Configured in `benchmark_lib/engine/evaluator.py` as the `timeout=` argument to `subprocess.run()`:
+
 ```python
-timeout_sec = 10  # seconds, adjustable in evaluator.py or runner.py
+timeout=10  # seconds; subprocess is killed if exceeded → returns "code-timeout" error
 ```
 
-## Cache
+---
 
-Prompt cache file defaults to:
+## Prompt Cache
 
-- `.benchmark_cache/prompt_cache.json`
+- **Default path**: `.benchmark_cache/prompt_cache.json`
+- **Cache key**: SHA-256 hash of `prompt + model_name`
+- **Validation**: Cached responses are cleaned and re-validated before reuse; malformed or stale entries are silently regenerated
+- **Implementation**: `benchmark_lib/utils/cache.py`
 
-Implementation: `benchmark_lib/utils/cache.py`
+To force live API calls (bypass cache):
 
-Cache key is SHA-256 hash of prompt + model name namespace.
+```powershell
+Remove-Item .benchmark_cache\prompt_cache.json
+```
 
-Cached responses are cleaned/validated before reuse; invalid cached entries are ignored and regenerated.
+---
 
 ## CLI Arguments
 
 ### Main Benchmark Flags
-- `--dataset-path` (default `data/raw_datasets`) - Root dataset directory
-- `--model` (required) - Provider: `echo`, `openai`, `openrouter`, `local`, `huggingface`, `gemini`, `together`, `groq`
-- `--model-name` (required) - Explicit model ID (e.g., `gpt-4o-mini`, `llama3.1:8b`)
-- `--mode` (default `quick`) - Sample size: `quick` (10%), `half` (50%), `full` (100%)
-- `--seed` / `--seeds` - Determinism control (single seed or comma-separated list for multiple runs)
-- `--batch-size` (default 4) - Samples per API call
-- `--max-workers` (default 8) - Concurrent inference threads
-- `--retries` (default 2) - Retry attempts on failure
-- `--timeout-seconds` - DISABLED (accepted for compatibility, models run without time limits)
-- `--env-file` (default `.env`) - Environment variable file
+
+| Flag | Default | Description |
+|---|---|---|
+| `--dataset-path` | `data/raw_datasets` | Root directory containing dataset folders |
+| `--model` | `echo` | Provider: `echo`, `openai`, `openrouter`, `local`, `huggingface`, `gemini`, `together`, `groq` |
+| `--model-name` | *(provider default)* | Explicit model identifier (required for `openai`, `openrouter`, `local`, `huggingface`) |
+| `--mode` | `half` | Sample size: `quick` (~500), `half` (~1500), `full` (~6000) |
+| `--seed` | `42` | Random seed for deterministic sampling |
+| `--seeds` | *(none)* | Comma-separated list for multi-seed runs, e.g. `42,43,44` |
+| `--domain` | *(all 4)* | Restrict to a single domain: `math`, `logic`, `knowledge`, `code` |
+| `--batch-size` | `8` | Samples per processing batch |
+| `--max-workers` | *(auto)* | Concurrent model request threads |
+| `--retries` | `2` | Retry attempts per sample on failure |
+| `--timeout-seconds` | *(disabled)* | Accepted for backward compatibility; models run without time limits |
+| `--raw-output-log` | `temp_eval/raw_outputs.jsonl` | JSONL path for per-sample logs |
+| `--env-file` | `.env` | Path to environment variable file |
 
 ### Analysis & Comparison Flags
-- `--dry-run` - **NEW** Preview sample selection without API calls
-- `--raw-output-log` - Output JSONL records with question, prediction, error, and timing per sample
-- `--compare` - **NEW** Side-by-side comparison of two model result files (runs McNemar's test)
 
-Example:
+| Flag | Description |
+|---|---|
+| `--dry-run` | Preview sample selection counts by domain/difficulty — no API calls made |
+| `--compare RESULT1 RESULT2` | Side-by-side comparison of two result JSON files, including McNemar's test if JSONL logs are found |
+
+### Local / HF-Specific Flags
+
+| Flag | Default | Description |
+|---|---|---|
+| `--local-base-url` | `http://localhost:11434/v1` | Ollama or other local endpoint |
+| `--local-api-key` | *(empty)* | API key for local endpoint (optional) |
+| `--hf-api-token` | *(env)* | Hugging Face token (overrides `HF_API_TOKEN`) |
+| `--hf-use-inference-api` | `false` | Use cloud Inference API instead of local `transformers` |
+| `--hf-device` | `cpu` | Local inference device: `cpu`, `cuda`, or `mps` |
+
+### Example Invocations
+
 ```powershell
+# Local Ollama model
 python run_benchmark.py --model local --model-name llama3.1:8b --mode quick --seed 42
-python run_benchmark.py --dry-run --mode quick  # Preview sampling without inference
-python run_benchmark.py --compare result1.Json result2.json  # Statistical comparison
+
+# Preview sampling (no API calls)
+python run_benchmark.py --dry-run --mode quick
+
+# Statistical comparison of two runs
+python run_benchmark.py --compare "bech mark\result1.json" "bech mark\result2.json"
+
+# Gemini full benchmark with custom log path
+python run_benchmark.py --model gemini --model-name gemini-2.0-flash --mode full \
+    --raw-output-log temp_eval/gemini_full.jsonl
+
+# Multi-seed run for averaging
+python run_benchmark.py --model groq --model-name llama-3.1-8b-instant \
+    --mode half --seeds 42,43,44 --max-workers 1
 ```
 
-### Local/HF Specific Args
-- `--local-base-url` (default `http://localhost:11434/v1`) - Ollama endpoint
-- `--local-api-key` (optional) - API key for local endpoint
-- `--hf-api-token` - Hugging Face API token (for Inference API)
-- `--hf-use-inference-api` - Use cloud Inference API (default: local)
-- `--hf-device` - Local device: `cpu`, `cuda`, or `mps` (default: `cpu`)
+---
+
+## Output Files
+
+### Results JSON
+
+**Location**: `bech mark/{model}_{timestamp}.json`
+
+Key fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `model` | `str` | Model name |
+| `mode` | `str` | Benchmark mode |
+| `accuracy` | `float` | Overall accuracy |
+| `final_score` | `float` | Domain-weighted score |
+| `per_domain` | `dict` | Accuracy per domain |
+| `confidence_intervals_95` | `dict` | Wilson CIs for overall and per-domain accuracy |
+| `difficulty_breakdown` | `dict` | Count/accuracy/CI per difficulty tier |
+| `failure_breakdown` | `dict` | Counts of generation failures, format errors, wrong answers, execution errors |
+| `per_domain_errors` | `dict` | Error type frequency per domain |
+| `per_domain_timing` | `dict` | mean/min/max/total seconds per domain |
+| `token_usage` | `dict` | Total and per-domain input/output token counts |
+| `git_commit_hash` | `str` | Commit hash + `*` if uncommitted changes present |
+| `selected_datasets_by_domain` | `dict` | Which 2 datasets were selected per domain |
+| `cost` | `float` | Total API cost (where tracked) |
+
+### Raw Output JSONL
+
+**Location**: `temp_eval/raw_outputs.jsonl` (or path from `--raw-output-log`)
+
+Each line is one `EvalRecord`:
+
+```json
+{
+  "sample_id": "gsm8k_main-2522",
+  "dataset": "gsm8k_main",
+  "domain": "math",
+  "question": "...",
+  "prediction": "18",
+  "expected": "18",
+  "correct": true,
+  "error": null,
+  "difficulty": "medium",
+  "prompt": "[full prompt text]",
+  "input_tokens": 127,
+  "output_tokens": 12,
+  "elapsed_seconds": 0.48
+}
+```
+
+### Markdown Report
+
+**Generated by**: `generate_report.py result.json report.md`
+
+Sections:
+- Executive summary with overall accuracy and final score
+- Per-domain accuracy table with confidence intervals
+- Difficulty breakdown
+- Timing statistics
+- Reproducibility metadata (model, seed, git commit, datasets)
+
+---
 
 ## Logging
 
-Logger utility: `benchmark_lib/utils/logging.py`
+Logger: `benchmark_lib/utils/logging.py`
 
-Current logger setup:
+- Level: `INFO` by default
+- Stream handler with `[timestamp] [name] [level]` formatting
+- Key log prefixes:
+  - `🧪 Testing code for {sample_id}` — code evaluation started
+  - `✓ Code test PASSED` / `✗ Code test FAILED` — per-sample code results
+  - `✓ Output MATCHED` / `✗ Output MISMATCH` — output comparison results
+  - `[timeout]` / `[exec-failure]` — execution errors
 
-- level: INFO
-- stream handler with timestamp/name formatting
-- file output to `benchmark.log` (optional, via config)
+---
 
-## Supported datasets list
+## Supported Datasets
 
-Canonical supported folder names are declared in:
+Canonical dataset folder names are declared in `benchmark_lib/dataset/validator.py`. Unsupported folder names trigger a warning but don't stop execution.
 
-- `benchmark_lib/dataset/validator.py`
+**Math**: `gsm8k_main`, `gsm8k_socratic`, `hendrycks_math_algebra`, `hendrycks_math_counting_and_probability`, `hendrycks_math_geometry`, `hendrycks_math_intermediate_algebra`, `hendrycks_math_number_theory`, `hendrycks_math_prealgebra`, `hendrycks_math_precalculus`, `svamp`
 
-## Output Files Generated
+**Logic**: `proofwriter`, `reclor`
 
-### Results JSON
-Located in `bech mark/` directory:
-- Filename: `{model}_{timestamp}.json`
-- Contains: accuracy, final_score, confidence_intervals_95, per_domain metrics, error breakdown, git_commit, timing data
+**Knowledge**: `squad`, `natural_questions`, `trivia_qa`
 
-### Raw Output JSONL
-Located in `temp_eval/` directory (when --raw-output-log specified):
-- Filename: `{model}_{timestamp}_raw_outputs.jsonl`
-- Per-sample records: question, prediction, expected, correct, error, difficulty, dataset, tokens, elapsed_seconds
-
-### Markdown Report
-Generated by `generate_report.py`:
-- Format: Professional Markdown with tables and statistics
-- Sections: Executive summary, per-domain breakdown, reproducibility metadata
+**Code**: `openai_humaneval`, `mbpp_full`, `mbpp_sanitized`
