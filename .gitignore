@@ -4,7 +4,6 @@ data/
 datasets/
 
 # cache / outputs
-benchmarks/
 .cache/
 dist/
 
