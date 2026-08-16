@@ -9,6 +9,8 @@ dist/
 
 # env
 .venv/
+.env
+.env.*
 
 # large files
 *.bin
